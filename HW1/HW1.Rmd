@@ -3,17 +3,106 @@ title: "Data 621 Homework 1"
 output: pdf
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
 
 ```{r}
-plot(cars)
+library(tidyverse)
+library(reshape2)
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+# Data Preperation
+```{r importing data set}
+moneyball_training_data = read.csv("moneyball-training-data.csv")
+```
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```{r finding all NA}
+na_count = sapply(moneyball_training_data, function(y) sum(is.na(y)))
+na_count = data.frame(na_count)
+na_count %>%
+  arrange(desc(na_count)) %>%
+  mutate(total_rows = nrow(moneyball_training_data)) %>%
+  mutate(percent_missing = na_count / total_rows)
+```
+We can see that **TEAM_BATTING_HBP** is missing 91% of its data and **TEAM_BASERUN_CS** is missing around 34% of its data. This is a lot of data missing which is why those columns will be removing these. Based on online reading there is no definite cut of for how much data one should be missing before removing a column, but it is always better to have more data. With the other columns that are missing 10% of its data maybe we can fill those in with the mean and median, or entirely remove the row as there should be enough data left to train the model.
+
+```{r removing column}
+moneyball_subset = subset(moneyball_training_data, select=-c(TEAM_BATTING_HBP, TEAM_BASERUN_CS, INDEX))
+```
+
+
+## Replacing NA with Median
+We will need to look at the distribution of the columns with missing data in order to decide if we will be using the median or mean to fill in the missing data
+
+```{r}
+missing_data = subset(moneyball_subset, select = c(TEAM_FIELDING_DP, TEAM_BASERUN_SB, TEAM_BATTING_SO, TEAM_PITCHING_SO))
+missing_data = melt(missing_data)
+
+ggplot(missing_data, aes(x = value)) + geom_histogram(binwidth = 10) + facet_wrap(~variable, scale='free')
+```
+We can see that not all the distribution are uniform with being bimodal or having a tail. For this reason we will be using the median to replace all the NA values as the median is less succepital to outliers.
+
+```{r}
+replace_na_with_median = function(x){
+  x[is.na(x)] = median(x, na.rm=TRUE)
+  return(x)
+}
+
+moneyball_fill = apply(moneyball_subset, 2, replace_na_with_median)
+moneyball_fill = as.data.frame(moneyball_fill)
+```
+
+
+
+## Transformation
+Checking all of the columns to see if they need any type of transformation on the column in order to create a linear line
+
+```{r}
+par(mfrow=c(2,2))
+
+
+for (i in 2:ncol(moneyball_fill)){
+  
+  y = moneyball_subset[,1]
+  x = moneyball_subset[,i]
+  plot(
+    x, 
+    y,   
+    ylab = 'TARGET_WINS',
+    xlab = names(moneyball_fill)[i]
+  )
+}
+```
+We can see that none of the columns are real good candidates for a log transformation. The reason is because a log transformation on the columns will not create a more linear line with any of these columns 
+
+
+## Putting Teams Into Buckets
+
+We will be putting the dataset into buckets based on the teams winning score as this will allow us to see if there is any patterns between weak and strong teams.
+
+```{r}
+moneyball_fill$TEAM_TYPE = cut(moneyball_subset[,'TARGET_WINS'], breaks=c(0, 73, 146), include.lowest = TRUE, labels = c('Weak', 'Strong'))
+```
+
+
+## Creating Total Hits
+Creating a column which includes the total amount of hits a team has
+
+```{r}
+moneyball_fill$TEAM_BATTING_TOTAL = (moneyball_fill$TEAM_BATTING_H + (2 * moneyball_fill$TEAM_BATTING_2B) + (3 * moneyball_fill$TEAM_BATTING_3B) + (4 * moneyball_fill$TEAM_BATTING_HR))
+```
+
+```{r}
+ggplot(moneyball_fill, aes(x=TEAM_BATTING_TOTAL, y=TARGET_WINS)) + geom_smooth(method='lm') + geom_point(aes(color=TEAM_TYPE))
+```
+
+## Hit Percentage
+We would like to create a column which states what is the teams hit/base they get per game. This will be calculated by summing the total amount of hits a team gets and dividing 162 game season.
+
+```{r}
+moneyball_fill$TEAM_BATTING_PERCENT =  moneyball_fill$TEAM_BATTING_TOTAL / 162
+```
+
+```{r}
+ggplot(moneyball_fill, aes(x=TEAM_BATTING_PERCENT, y=TARGET_WINS)) + geom_smooth(method='lm') + geom_point(aes(color=TEAM_TYPE))
+```
 
