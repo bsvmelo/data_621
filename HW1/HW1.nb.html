@@ -236,232 +236,552 @@ pre code {
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI0ltcG9ydCB0aGUgZGF0YVxuRGF0YSA8LSByZWFkLmNzdihcIm1vbmV5YmFsbC10cmFpbmluZy1kYXRhLmNzdlwiKVxuaGVhZChEYXRhKVxuYGBgIn0= -->
-<pre class="r"><code>#Import the data
-Data &lt;- read.csv(&quot;moneyball-training-data.csv&quot;)
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuI0ltcG9ydCB0aGUgZGF0YVxuRGF0YSA8LSByZWFkLmNzdihcXG1vbmV5YmFsbC10cmFpbmluZy1kYXRhLmNzdlxcKVxuaGVhZChEYXRhKVxuYGBgXG5gYGAifQ== -->
+<pre class="r"><code>```r
+#Import the data
+Data &lt;- read.csv(\moneyball-training-data.csv\)
 head(Data)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>We can see that the data contain 17 columns and 2276 observations or records. The first column is the index which will be deleted as it is not useful.</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI1JlbW92ZSB0aGUgaW5kZXhcbkRhdGExIDwtIERhdGEgWy1jKDEpXVxuI0RhdGExJElOREVYID0gTlVMTFxuYGBgIn0= -->
-<pre class="r"><code>#Remove the index
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+We can see that the data contain 17 columns and 2276 observations or records. The first column is the index which will be deleted as it is not useful. 
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuI1JlbW92ZSB0aGUgaW5kZXhcbkRhdGExIDwtIERhdGEgWy1jKDEpXVxuI0RhdGExJElOREVYID0gTlVMTFxuYGBgXG5gYGAifQ== --&gt;
+
+```r
+```r
+#Remove the index
 Data1 &lt;- Data [-c(1)]
 #Data1$INDEX = NULL</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI0NoZWNrIHRoZSBTdW1tYXJ5XG5zdW1tYXJ5KERhdGExKVxuYGBgIn0= -->
-<pre class="r"><code>#Check the Summary
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuI0NoZWNrIHRoZSBTdW1tYXJ5XG5zdW1tYXJ5KERhdGExKVxuYGBgXG5gYGAifQ== --&gt;
+
+```r
+```r
+#Check the Summary
 summary(Data1)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>Summary of the data gives a useful information about each feature including the number of NA values. It is obvious that we have many NA values.</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBDb21wdXRlIGRlc2NyaXB0aXZlIHN0YXRpc3RpY3NcbnJlcyA8LSBzdGF0LmRlc2MoRGF0YTEpXG5yb3VuZChyZXMsMilcbmBgYCJ9 -->
-<pre class="r"><code># Compute descriptive statistics
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+Summary of the data gives a useful information about each feature including the number of NA values. It is obvious that we have many NA values. 
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuIyBDb21wdXRlIGRlc2NyaXB0aXZlIHN0YXRpc3RpY3NcbnJlcyA8LSBzdGF0LmRlc2MoRGF0YTEpXG5yb3VuZChyZXMsMilcbmBgYFxuYGBgIn0= --&gt;
+
+```r
+```r
+# Compute descriptive statistics
 res &lt;- stat.desc(Data1)
 round(res,2)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI1RoZSBtZWFuIGZvciBlYWNoIGNvbHVtbiBpbiB0aGUgZGF0YVxuY29sTWVhbnMoRGF0YTEpXG5gYGAifQ== -->
-<pre class="r"><code>#The mean for each column in the data
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuI1RoZSBtZWFuIGZvciBlYWNoIGNvbHVtbiBpbiB0aGUgZGF0YVxuY29sTWVhbnMoRGF0YTEpXG5gYGBcbmBgYCJ9 --&gt;
+
+```r
+```r
+#The mean for each column in the data
 colMeans(Data1)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI1RoZSBTdGFuZGFyZCBEZXZpYXRpb24gZm9yIGVhY2ggY29sdW1uIGluIHRoZSBkYXRhXG5zYXBwbHkoRGF0YTEsIHNkKVxuYGBgIn0= -->
-<pre class="r"><code>#The Standard Deviation for each column in the data
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuI1RoZSBTdGFuZGFyZCBEZXZpYXRpb24gZm9yIGVhY2ggY29sdW1uIGluIHRoZSBkYXRhXG5zYXBwbHkoRGF0YTEsIHNkKVxuYGBgXG5gYGAifQ== --&gt;
+
+```r
+```r
+#The Standard Deviation for each column in the data
 sapply(Data1, sd)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI1RoZSBtZWRpYW4gZm9yIGVhY2ggY29sdW1uIGluIHRoZSBkYXRhXG5hcHBseShEYXRhMSwyLCBtZWRpYW4pXG5gYGAifQ== -->
-<pre class="r"><code>#The median for each column in the data
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuI1RoZSBtZWRpYW4gZm9yIGVhY2ggY29sdW1uIGluIHRoZSBkYXRhXG5hcHBseShEYXRhMSwyLCBtZWRpYW4pXG5gYGBcbmBgYCJ9 --&gt;
+
+```r
+```r
+#The median for each column in the data
 apply(Data1,2, median)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="missing-vlaues" class="section level3">
-<h3>Missing Vlaues</h3>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI1NlYXJjaCBpZiB0aGVyZSBhcmUgYW55IE5BIHZhbHVlc1xuXG5zdW0oaXMubmEoRGF0YTEpKVxuYGBgIn0= -->
-<pre class="r"><code>#Search if there are any NA values
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+### Missing Vlaues
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuI1NlYXJjaCBpZiB0aGVyZSBhcmUgYW55IE5BIHZhbHVlc1xuXG5zdW0oaXMubmEoRGF0YTEpKVxuYGBgXG5gYGAifQ== --&gt;
+
+```r
+```r
+#Search if there are any NA values
 
 sum(is.na(Data1))</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI1dlIGFyZSBub3QgYWJsZSB0byBkZWxldGUgdGhlIE5BIHZhbHVlcy4gV2Ugd2lsbCByZXBsYWNlIE5BIHZhbHVlcy5cblxuRGF0YTIgPSByZXBsYWNlKERhdGExLCBUUlVFLCBsYXBwbHkoRGF0YTEsIG5hLmFnZ3JlZ2F0ZSkpXG5gYGAifQ== -->
-<pre class="r"><code>#We are not able to delete the NA values. We will replace NA values.
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuI1dlIGFyZSBub3QgYWJsZSB0byBkZWxldGUgdGhlIE5BIHZhbHVlcy4gV2Ugd2lsbCByZXBsYWNlIE5BIHZhbHVlcy5cblxuRGF0YTIgPSByZXBsYWNlKERhdGExLCBUUlVFLCBsYXBwbHkoRGF0YTEsIG5hLmFnZ3JlZ2F0ZSkpXG5gYGBcbmBgYCJ9 --&gt;
+
+```r
+```r
+#We are not able to delete the NA values. We will replace NA values.
 
 Data2 = replace(Data1, TRUE, lapply(Data1, na.aggregate))</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI0NvbmZpcm0gdGhlIGFsbCBOQSB2YWx1ZXMgd2VyZSByZXBsYWNlZCBieSB0aGUgbWVhbi5cbnN1bShpcy5uYShEYXRhMikpXG5gYGAifQ== -->
-<pre class="r"><code>#Confirm the all NA values were replaced by the mean.
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuI0NvbmZpcm0gdGhlIGFsbCBOQSB2YWx1ZXMgd2VyZSByZXBsYWNlZCBieSB0aGUgbWVhbi5cbnN1bShpcy5uYShEYXRhMikpXG5gYGBcbmBgYCJ9 --&gt;
+
+```r
+```r
+#Confirm the all NA values were replaced by the mean.
 sum(is.na(Data2))</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI0NvbmZpcm0gdGhhdCBkYXRhIGlzIG51bWVyaWNcbnNhcHBseShEYXRhMiwgaXMubnVtZXJpYylcbmBgYCJ9 -->
-<pre class="r"><code>#Confirm that data is numeric
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuI0NvbmZpcm0gdGhhdCBkYXRhIGlzIG51bWVyaWNcbnNhcHBseShEYXRhMiwgaXMubnVtZXJpYylcbmBgYFxuYGBgIn0= --&gt;
+
+```r
+```r
+#Confirm that data is numeric
 sapply(Data2, is.numeric)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="graphs" class="section level3">
-<h3>Graphs</h3>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaGlzdChEYXRhMiRUQVJHRVRfV0lOUylcbmBgYCJ9 -->
-<pre class="r"><code>hist(Data2$TARGET_WINS)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>The histogram of the target_wins column is normally distributed.</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuRGF0YTIgJT4lXG4gIGdhdGhlcih2YXIsIHZhbHVlLCBUQVJHRVRfV0lOUzpURUFNX0ZJRUxESU5HX0RQKSAlPiVcbiAgZ2dwbG90KC4sIGFlcyh2YWx1ZSkpICsgXG4gIGdlb21fZGVuc2l0eShjb2xvciA9IFwiYmx1ZVwiKSArIFxuICBmYWNldF93cmFwKH52YXIsIHNjYWxlcz0gXCJmcmVlXCIsIG5jb2wgPSA0KVxuICAgICAgICAgXG5gYGAifQ== -->
-<pre class="r"><code>Data2 %&gt;%
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+### Graphs
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuaGlzdChEYXRhMiRUQVJHRVRfV0lOUylcbmBgYFxuYGBgIn0= --&gt;
+
+```r
+```r
+hist(Data2$TARGET_WINS)</code></pre>
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+The histogram of the target_wins column is normally distributed. 
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuRGF0YTIgJT4lXG4gIGdhdGhlcih2YXIsIHZhbHVlLCBUQVJHRVRfV0lOUzpURUFNX0ZJRUxESU5HX0RQKSAlPiVcbiAgZ2dwbG90KC4sIGFlcyh2YWx1ZSkpICsgXG4gIGdlb21fZGVuc2l0eShjb2xvciA9IFxcYmx1ZVxcKSArIFxuICBmYWNldF93cmFwKH52YXIsIHNjYWxlcz0gXFxmcmVlXFwsIG5jb2wgPSA0KVxuICAgICAgICAgXG5gYGBcbmBgYCJ9 --&gt;
+
+```r
+```r
+Data2 %&gt;%
   gather(var, value, TARGET_WINS:TEAM_FIELDING_DP) %&gt;%
   ggplot(., aes(value)) + 
-  geom_density(color = &quot;blue&quot;) + 
-  facet_wrap(~var, scales= &quot;free&quot;, ncol = 4)
+  geom_density(color = \blue\) + 
+  facet_wrap(~var, scales= \free\, ncol = 4)
          </code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuRGF0YTIgJT4lXG4gIGdhdGhlcih2YXIsIHZhbHVlLCBUQVJHRVRfV0lOUzpURUFNX0ZJRUxESU5HX0RQKSAlPiVcbiAgZ2dwbG90KC4sIGFlcyh2YWx1ZSkpICsgXG4gIGdlb21fYm94cGxvdChub3RjaCA9IFRSVUUpICsgXG4gIGZhY2V0X3dyYXAofnZhciwgc2NhbGVzPSBcImZyZWVcIiwgbmNvbCA9IDQpXG5gYGAifQ== -->
-<pre class="r"><code>Data2 %&gt;%
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuRGF0YTIgJT4lXG4gIGdhdGhlcih2YXIsIHZhbHVlLCBUQVJHRVRfV0lOUzpURUFNX0ZJRUxESU5HX0RQKSAlPiVcbiAgZ2dwbG90KC4sIGFlcyh2YWx1ZSkpICsgXG4gIGdlb21fYm94cGxvdChub3RjaCA9IFRSVUUpICsgXG4gIGZhY2V0X3dyYXAofnZhciwgc2NhbGVzPSBcXGZyZWVcXCwgbmNvbCA9IDQpXG5gYGBcbmBgYCJ9 --&gt;
+
+```r
+```r
+Data2 %&gt;%
   gather(var, value, TARGET_WINS:TEAM_FIELDING_DP) %&gt;%
   ggplot(., aes(value)) + 
   geom_boxplot(notch = TRUE) + 
-  facet_wrap(~var, scales= &quot;free&quot;, ncol = 4)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="correlation" class="section level3">
-<h3>Correlation</h3>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBVc2UgcGVhcnNvbiBjb3JyZWxhdGlvblxuY29ycnI6OiBjb3JyZWxhdGUgKERhdGEyLCBtZXRob2QgPSBcInBlYXJzb25cIilcblxuYGBgIn0= -->
-<pre class="r"><code># Use pearson correlation
-corrr:: correlate (Data2, method = &quot;pearson&quot;)
+  facet_wrap(~var, scales= \free\, ncol = 4)</code></pre>
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+### Correlation
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuIyBVc2UgcGVhcnNvbiBjb3JyZWxhdGlvblxuY29ycnI6OiBjb3JyZWxhdGUgKERhdGEyLCBtZXRob2QgPSBcXHBlYXJzb25cXClcblxuYGBgXG5gYGAifQ== --&gt;
+
+```r
+```r
+# Use pearson correlation
+corrr:: correlate (Data2, method = \pearson\)
 </code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2djb3JyKERhdGEyKVxuXG5gYGAifQ== -->
-<pre class="r"><code>ggcorr(Data2)
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuZ2djb3JyKERhdGEyKVxuXG5gYGBcbmBgYCJ9 --&gt;
+
+```r
+```r
+ggcorr(Data2)
 </code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI0FkZCBjb3JyZWxhdGlvbiBjb2VmZmljaWVudHNcbmNvcnIgPC0gcm91bmQoY29yKERhdGEyKSwgMSlcbmdnY29ycnBsb3QoY29yciwgaGMub3JkZXIgPSBUUlVFLCB0eXBlID0gXCJsb3dlclwiLFxuICAgbGFiID0gVFJVRSlcbmBgYCJ9 -->
-<pre class="r"><code>#Add correlation coefficients
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuI0FkZCBjb3JyZWxhdGlvbiBjb2VmZmljaWVudHNcbmNvcnIgPC0gcm91bmQoY29yKERhdGEyKSwgMSlcbmdnY29ycnBsb3QoY29yciwgaGMub3JkZXIgPSBUUlVFLCB0eXBlID0gXFxsb3dlclxcLFxuICAgbGFiID0gVFJVRSlcbmBgYFxuYGBgIn0= --&gt;
+
+```r
+```r
+#Add correlation coefficients
 corr &lt;- round(cor(Data2), 1)
-ggcorrplot(corr, hc.order = TRUE, type = &quot;lower&quot;,
+ggcorrplot(corr, hc.order = TRUE, type = \lower\,
    lab = TRUE)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-</div>
-<div id="data-preperation" class="section level1">
-<h1>Data Preperation</h1>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9uZXliYWxsX3RyYWluaW5nX2RhdGEgPSByZWFkLmNzdihcIm1vbmV5YmFsbC10cmFpbmluZy1kYXRhLmNzdlwiKVxuYGBgIn0= -->
-<pre class="r"><code>moneyball_training_data = read.csv(&quot;moneyball-training-data.csv&quot;)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubmFfY291bnQgPSBzYXBwbHkobW9uZXliYWxsX3RyYWluaW5nX2RhdGEsIGZ1bmN0aW9uKHkpIHN1bShpcy5uYSh5KSkpXG5uYV9jb3VudCA9IGRhdGEuZnJhbWUobmFfY291bnQpXG5uYV9jb3VudCAlPiVcbiAgYXJyYW5nZShkZXNjKG5hX2NvdW50KSkgJT4lXG4gIG11dGF0ZSh0b3RhbF9yb3dzID0gbnJvdyhtb25leWJhbGxfdHJhaW5pbmdfZGF0YSkpICU+JVxuICBtdXRhdGUocGVyY2VudF9taXNzaW5nID0gbmFfY291bnQgLyB0b3RhbF9yb3dzKVxuYGBgIn0= -->
-<pre class="r"><code>na_count = sapply(moneyball_training_data, function(y) sum(is.na(y)))
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+
+
+# Data Preperation
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubW9uZXliYWxsX3RyYWluaW5nX2RhdGEgPSByZWFkLmNzdihcXG1vbmV5YmFsbC10cmFpbmluZy1kYXRhLmNzdlxcKVxuYGBgXG5gYGAifQ== --&gt;
+
+```r
+```r
+moneyball_training_data = read.csv(\moneyball-training-data.csv\)</code></pre>
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubmFfY291bnQgPSBzYXBwbHkobW9uZXliYWxsX3RyYWluaW5nX2RhdGEsIGZ1bmN0aW9uKHkpIHN1bShpcy5uYSh5KSkpXG5uYV9jb3VudCA9IGRhdGEuZnJhbWUobmFfY291bnQpXG5uYV9jb3VudCAlPiVcbiAgYXJyYW5nZShkZXNjKG5hX2NvdW50KSkgJT4lXG4gIG11dGF0ZSh0b3RhbF9yb3dzID0gbnJvdyhtb25leWJhbGxfdHJhaW5pbmdfZGF0YSkpICU+JVxuICBtdXRhdGUocGVyY2VudF9taXNzaW5nID0gbmFfY291bnQgLyB0b3RhbF9yb3dzKVxuYGBgXG5gYGAifQ== --&gt;
+
+```r
+```r
+na_count = sapply(moneyball_training_data, function(y) sum(is.na(y)))
 na_count = data.frame(na_count)
 na_count %&gt;%
   arrange(desc(na_count)) %&gt;%
   mutate(total_rows = nrow(moneyball_training_data)) %&gt;%
   mutate(percent_missing = na_count / total_rows)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>We can see that <strong>TEAM_BATTING_HBP</strong> is missing 91% of its data and <strong>TEAM_BASERUN_CS</strong> is missing around 34% of its data. This is a lot of data missing which is why those columns will be removing these. Based on online reading there is no definite cut of for how much data one should be missing before removing a column, but it is always better to have more data. With the other columns that are missing 10% of its data maybe we can fill those in with the mean and median, or entirely remove the row as there should be enough data left to train the model.</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9uZXliYWxsX3N1YnNldCA9IHN1YnNldChtb25leWJhbGxfdHJhaW5pbmdfZGF0YSwgc2VsZWN0PS1jKFRFQU1fQkFUVElOR19IQlAsIFRFQU1fQkFTRVJVTl9DUywgSU5ERVgpKVxuYGBgIn0= -->
-<pre class="r"><code>moneyball_subset = subset(moneyball_training_data, select=-c(TEAM_BATTING_HBP, TEAM_BASERUN_CS, INDEX))</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<div id="replacing-na-with-median" class="section level2">
-<h2>Replacing NA with Median</h2>
-<p>We will need to look at the distribution of the columns with missing data in order to decide if we will be using the median or mean to fill in the missing data</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWlzc2luZ19kYXRhID0gc3Vic2V0KG1vbmV5YmFsbF9zdWJzZXQsIHNlbGVjdCA9IGMoVEVBTV9GSUVMRElOR19EUCwgVEVBTV9CQVNFUlVOX1NCLCBURUFNX0JBVFRJTkdfU08sIFRFQU1fUElUQ0hJTkdfU08pKVxubWlzc2luZ19kYXRhID0gbWVsdChtaXNzaW5nX2RhdGEpXG5cbmdncGxvdChtaXNzaW5nX2RhdGEsIGFlcyh4ID0gdmFsdWUpKSArIGdlb21faGlzdG9ncmFtKGJpbndpZHRoID0gMTApICsgZmFjZXRfd3JhcCh+dmFyaWFibGUsIHNjYWxlPSdmcmVlJylcbmBgYCJ9 -->
-<pre class="r"><code>missing_data = subset(moneyball_subset, select = c(TEAM_FIELDING_DP, TEAM_BASERUN_SB, TEAM_BATTING_SO, TEAM_PITCHING_SO))
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+We can see that **TEAM_BATTING_HBP** is missing 91% of its data and **TEAM_BASERUN_CS** is missing around 34% of its data. This is a lot of data missing which is why those columns will be removing these. Based on online reading there is no definite cut of for how much data one should be missing before removing a column, but it is always better to have more data. With the other columns that are missing 10% of its data maybe we can fill those in with the mean and median, or entirely remove the row as there should be enough data left to train the model.
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubW9uZXliYWxsX3N1YnNldCA9IHN1YnNldChtb25leWJhbGxfdHJhaW5pbmdfZGF0YSwgc2VsZWN0PS1jKFRFQU1fQkFUVElOR19IQlAsIFRFQU1fQkFTRVJVTl9DUywgSU5ERVgpKVxuYGBgXG5gYGAifQ== --&gt;
+
+```r
+```r
+moneyball_subset = subset(moneyball_training_data, select=-c(TEAM_BATTING_HBP, TEAM_BASERUN_CS, INDEX))</code></pre>
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+## Replacing NA with Median
+We will need to look at the distribution of the columns with missing data in order to decide if we will be using the median or mean to fill in the missing data
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubWlzc2luZ19kYXRhID0gc3Vic2V0KG1vbmV5YmFsbF9zdWJzZXQsIHNlbGVjdCA9IGMoVEVBTV9GSUVMRElOR19EUCwgVEVBTV9CQVNFUlVOX1NCLCBURUFNX0JBVFRJTkdfU08sIFRFQU1fUElUQ0hJTkdfU08pKVxubWlzc2luZ19kYXRhID0gbWVsdChtaXNzaW5nX2RhdGEpXG5cbmdncGxvdChtaXNzaW5nX2RhdGEsIGFlcyh4ID0gdmFsdWUpKSArIGdlb21faGlzdG9ncmFtKGJpbndpZHRoID0gMTApICsgZmFjZXRfd3JhcCh+dmFyaWFibGUsIHNjYWxlPSdmcmVlJylcbmBgYFxuYGBgIn0= --&gt;
+
+```r
+```r
+missing_data = subset(moneyball_subset, select = c(TEAM_FIELDING_DP, TEAM_BASERUN_SB, TEAM_BATTING_SO, TEAM_PITCHING_SO))
 missing_data = melt(missing_data)
 
 ggplot(missing_data, aes(x = value)) + geom_histogram(binwidth = 10) + facet_wrap(~variable, scale=&#39;free&#39;)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>We can see that not all the distribution are uniform with being bimodal or having a tail. For this reason we will be using the median to replace all the NA values as the median is less succepital to outliers.</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucmVwbGFjZV9uYV93aXRoX21lZGlhbiA9IGZ1bmN0aW9uKHgpe1xuICB4W2lzLm5hKHgpXSA9IG1lZGlhbih4LCBuYS5ybT1UUlVFKVxuICByZXR1cm4oeClcbn1cblxubW9uZXliYWxsX2ZpbGwgPSBhcHBseShtb25leWJhbGxfc3Vic2V0LCAyLCByZXBsYWNlX25hX3dpdGhfbWVkaWFuKVxubW9uZXliYWxsX2ZpbGwgPSBhcy5kYXRhLmZyYW1lKG1vbmV5YmFsbF9maWxsKVxuYGBgIn0= -->
-<pre class="r"><code>replace_na_with_median = function(x){
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+We can see that not all the distribution are uniform with being bimodal or having a tail. For this reason we will be using the median to replace all the NA values as the median is less succepital to outliers.
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxucmVwbGFjZV9uYV93aXRoX21lZGlhbiA9IGZ1bmN0aW9uKHgpe1xuICB4W2lzLm5hKHgpXSA9IG1lZGlhbih4LCBuYS5ybT1UUlVFKVxuICByZXR1cm4oeClcbn1cblxubW9uZXliYWxsX2ZpbGwgPSBhcHBseShtb25leWJhbGxfc3Vic2V0LCAyLCByZXBsYWNlX25hX3dpdGhfbWVkaWFuKVxubW9uZXliYWxsX2ZpbGwgPSBhcy5kYXRhLmZyYW1lKG1vbmV5YmFsbF9maWxsKVxuYGBgXG5gYGAifQ== --&gt;
+
+```r
+```r
+replace_na_with_median = function(x){
   x[is.na(x)] = median(x, na.rm=TRUE)
   return(x)
 }
 
 moneyball_fill = apply(moneyball_subset, 2, replace_na_with_median)
 moneyball_fill = as.data.frame(moneyball_fill)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="transformation" class="section level2">
-<h2>Transformation</h2>
-<p>Checking all of the columns to see if they need any type of transformation on the column in order to create a linear line</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGFyKG1mcm93PWMoMiwyKSlcblxuXG5mb3IgKGkgaW4gMjpuY29sKG1vbmV5YmFsbF9maWxsKSl7XG4gIFxuICB5ID0gbW9uZXliYWxsX3N1YnNldFssMV1cbiAgeCA9IG1vbmV5YmFsbF9zdWJzZXRbLGldXG4gIHBsb3QoXG4gICAgeCwgXG4gICAgeSwgICBcbiAgICB5bGFiID0gJ1RBUkdFVF9XSU5TJyxcbiAgICB4bGFiID0gbmFtZXMobW9uZXliYWxsX2ZpbGwpW2ldXG4gIClcbn1cbmBgYCJ9 -->
-<pre class="r"><code>par(mfrow=c(2,2))
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+
+## Transformation
+Checking all of the columns to see if they need any type of transformation on the column in order to create a linear line
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxucGFyKG1mcm93PWMoMiwyKSlcblxuXG5mb3IgKGkgaW4gMjpuY29sKG1vbmV5YmFsbF9maWxsKSl7XG4gIFxuICB5ID0gbW9uZXliYWxsX3N1YnNldFssMV1cbiAgeCA9IG1vbmV5YmFsbF9zdWJzZXRbLGldXG4gIHBsb3QoXG4gICAgeCwgXG4gICAgeSwgICBcbiAgICB5bGFiID0gJ1RBUkdFVF9XSU5TJyxcbiAgICB4bGFiID0gbmFtZXMobW9uZXliYWxsX2ZpbGwpW2ldXG4gIClcbn1cbmBgYFxuYGBgIn0= --&gt;
+
+```r
+```r
+par(mfrow=c(2,2))
 
 
 for (i in 2:ncol(moneyball_fill)){
@@ -475,54 +795,125 @@ for (i in 2:ncol(moneyball_fill)){
     xlab = names(moneyball_fill)[i]
   )
 }</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>We can see that none of the columns are real good candidates for a log transformation. The reason is because a log transformation on the columns will not create a more linear line with any of these columns</p>
-</div>
-<div id="putting-teams-into-buckets" class="section level2">
-<h2>Putting Teams Into Buckets</h2>
-<p>We will be putting the dataset into buckets based on the teams winning score as this will allow us to see if there is any patterns between weak and strong teams.</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9uZXliYWxsX2ZpbGwkVEVBTV9UWVBFID0gY3V0KG1vbmV5YmFsbF9zdWJzZXRbLCdUQVJHRVRfV0lOUyddLCBicmVha3M9YygwLCA3MywgMTQ2KSwgaW5jbHVkZS5sb3dlc3QgPSBUUlVFLCBsYWJlbHMgPSBjKCdXZWFrJywgJ1N0cm9uZycpKVxuYGBgIn0= -->
-<pre class="r"><code>moneyball_fill$TEAM_TYPE = cut(moneyball_subset[,&#39;TARGET_WINS&#39;], breaks=c(0, 73, 146), include.lowest = TRUE, labels = c(&#39;Weak&#39;, &#39;Strong&#39;))</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="creating-total-hits" class="section level2">
-<h2>Creating Total Hits</h2>
-<p>Creating a column which includes the total amount of hits a team has</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9uZXliYWxsX2ZpbGwkVEVBTV9CQVRUSU5HX1RPVEFMID0gKG1vbmV5YmFsbF9maWxsJFRFQU1fQkFUVElOR19IICsgKDIgKiBtb25leWJhbGxfZmlsbCRURUFNX0JBVFRJTkdfMkIpICsgKDMgKiBtb25leWJhbGxfZmlsbCRURUFNX0JBVFRJTkdfM0IpICsgKDQgKiBtb25leWJhbGxfZmlsbCRURUFNX0JBVFRJTkdfSFIpKVxuYGBgIn0= -->
-<pre class="r"><code>moneyball_fill$TEAM_BATTING_TOTAL = (moneyball_fill$TEAM_BATTING_H + (2 * moneyball_fill$TEAM_BATTING_2B) + (3 * moneyball_fill$TEAM_BATTING_3B) + (4 * moneyball_fill$TEAM_BATTING_HR))</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2dwbG90KG1vbmV5YmFsbF9maWxsLCBhZXMoeD1URUFNX0JBVFRJTkdfVE9UQUwsIHk9VEFSR0VUX1dJTlMpKSArIGdlb21fc21vb3RoKG1ldGhvZD0nbG0nKSArIGdlb21fcG9pbnQoYWVzKGNvbG9yPVRFQU1fVFlQRSkpXG5gYGAifQ== -->
-<pre class="r"><code>ggplot(moneyball_fill, aes(x=TEAM_BATTING_TOTAL, y=TARGET_WINS)) + geom_smooth(method=&#39;lm&#39;) + geom_point(aes(color=TEAM_TYPE))</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="hit-percentage" class="section level2">
-<h2>Hit Percentage</h2>
-<p>We would like to create a column which states what is the teams hit/base they get per game. This will be calculated by summing the total amount of hits a team gets and dividing 162 game season.</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubW9uZXliYWxsX2ZpbGwkVEVBTV9CQVRUSU5HX1BFUkNFTlQgPSAgbW9uZXliYWxsX2ZpbGwkVEVBTV9CQVRUSU5HX1RPVEFMIC8gMTYyXG5gYGAifQ== -->
-<pre class="r"><code>moneyball_fill$TEAM_BATTING_PERCENT =  moneyball_fill$TEAM_BATTING_TOTAL / 162</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2dwbG90KG1vbmV5YmFsbF9maWxsLCBhZXMoeD1URUFNX0JBVFRJTkdfUEVSQ0VOVCwgeT1UQVJHRVRfV0lOUykpICsgZ2VvbV9zbW9vdGgobWV0aG9kPSdsbScpICsgZ2VvbV9wb2ludChhZXMoY29sb3I9VEVBTV9UWVBFKSlcbmBgYCJ9 -->
-<pre class="r"><code>ggplot(moneyball_fill, aes(x=TEAM_BATTING_PERCENT, y=TARGET_WINS)) + geom_smooth(method=&#39;lm&#39;) + geom_point(aes(color=TEAM_TYPE))</code></pre>
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+We can see that none of the columns are real good candidates for a log transformation. The reason is because a log transformation on the columns will not create a more linear line with any of these columns 
+
+
+## Putting Teams Into Buckets
+
+We will be putting the dataset into buckets based on the teams winning score as this will allow us to see if there is any patterns between weak and strong teams.
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubW9uZXliYWxsX2ZpbGwkVEVBTV9UWVBFID0gY3V0KG1vbmV5YmFsbF9zdWJzZXRbLCdUQVJHRVRfV0lOUyddLCBicmVha3M9YygwLCA3MywgMTQ2KSwgaW5jbHVkZS5sb3dlc3QgPSBUUlVFLCBsYWJlbHMgPSBjKCdXZWFrJywgJ1N0cm9uZycpKVxuYGBgXG5gYGAifQ== --&gt;
+
+```r
+```r
+moneyball_fill$TEAM_TYPE = cut(moneyball_subset[,&#39;TARGET_WINS&#39;], breaks=c(0, 73, 146), include.lowest = TRUE, labels = c(&#39;Weak&#39;, &#39;Strong&#39;))</code></pre>
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+## Creating Total Hits
+Creating a column which includes the total amount of hits a team has
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubW9uZXliYWxsX2ZpbGwkVEVBTV9CQVRUSU5HX1RPVEFMID0gKG1vbmV5YmFsbF9maWxsJFRFQU1fQkFUVElOR19IICsgKDIgKiBtb25leWJhbGxfZmlsbCRURUFNX0JBVFRJTkdfMkIpICsgKDMgKiBtb25leWJhbGxfZmlsbCRURUFNX0JBVFRJTkdfM0IpICsgKDQgKiBtb25leWJhbGxfZmlsbCRURUFNX0JBVFRJTkdfSFIpKVxuYGBgXG5gYGAifQ== --&gt;
+
+```r
+```r
+moneyball_fill$TEAM_BATTING_TOTAL = (moneyball_fill$TEAM_BATTING_H + (2 * moneyball_fill$TEAM_BATTING_2B) + (3 * moneyball_fill$TEAM_BATTING_3B) + (4 * moneyball_fill$TEAM_BATTING_HR))</code></pre>
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuZ2dwbG90KG1vbmV5YmFsbF9maWxsLCBhZXMoeD1URUFNX0JBVFRJTkdfVE9UQUwsIHk9VEFSR0VUX1dJTlMpKSArIGdlb21fc21vb3RoKG1ldGhvZD0nbG0nKSArIGdlb21fcG9pbnQoYWVzKGNvbG9yPVRFQU1fVFlQRSkpXG5gYGBcbmBgYCJ9 --&gt;
+
+```r
+```r
+ggplot(moneyball_fill, aes(x=TEAM_BATTING_TOTAL, y=TARGET_WINS)) + geom_smooth(method=&#39;lm&#39;) + geom_point(aes(color=TEAM_TYPE))</code></pre>
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+## Hit Percentage
+We would like to create a column which states what is the teams hit/base they get per game. This will be calculated by summing the total amount of hits a team gets and dividing 162 game season.
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubW9uZXliYWxsX2ZpbGwkVEVBTV9CQVRUSU5HX1BFUkNFTlQgPSAgbW9uZXliYWxsX2ZpbGwkVEVBTV9CQVRUSU5HX1RPVEFMIC8gMTYyXG5gYGBcbmBgYCJ9 --&gt;
+
+```r
+```r
+moneyball_fill$TEAM_BATTING_PERCENT =  moneyball_fill$TEAM_BATTING_TOTAL / 162</code></pre>
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-chunk-end --&gt;
+
+
+&lt;!-- rnb-text-begin --&gt;
+
+
+
+&lt;!-- rnb-text-end --&gt;
+
+
+&lt;!-- rnb-chunk-begin --&gt;
+
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxuZ2dwbG90KG1vbmV5YmFsbF9maWxsLCBhZXMoeD1URUFNX0JBVFRJTkdfUEVSQ0VOVCwgeT1UQVJHRVRfV0lOUykpICsgZ2VvbV9zbW9vdGgobWV0aG9kPSdsbScpICsgZ2VvbV9wb2ludChhZXMoY29sb3I9VEVBTV9UWVBFKSlcbmBgYFxuYGBgIn0= --&gt;
+
+```r
+```r
+ggplot(moneyball_fill, aes(x=TEAM_BATTING_PERCENT, y=TARGET_WINS)) + geom_smooth(method=&#39;lm&#39;) + geom_point(aes(color=TEAM_TYPE))</code></pre>
+<p>```</p>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -530,7 +921,7 @@ for (i in 2:ncol(moneyball_fill)){
 </div>
 </div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIkRBVEEgNjIxIEhvbWV3b3JrIDEiDQpzdWJ0aXRsZTogIkNyaXRpY2FsIFRoaW5raW5nIEdyb3VwIDEiDQpkYXRlOiAiYHIgZm9ybWF0KFN5cy50aW1lKCksICclQiAlZCwgJVknKWAiDQpvdXRwdXQ6DQogIGh0bWxfZG9jdW1lbnQ6IA0KICAgIHRvYzogdHJ1ZQ0KICAgIHRvY19mbG9hdDogdHJ1ZQ0KICBwZGZfZG9jdW1lbnQ6IGRlZmF1bHQNCiAgaHRtbF9ub3RlYm9vazogZGVmYXVsdA0KLS0tDQoNCiMjIE92ZXJ2aWV3DQoNCkluIHRoaXMgaG9tZXdvcmsgYXNzaWdubWVudCwgd2Ugd2lsbCBleHBsb3JlLCBhbmFseXplIGFuZCBtb2RlbCBhIGRhdGEgc2V0IGNvbnRhaW5pbmcgYXBwcm94aW1hdGVseSAyMjAwIHJlY29yZHMuIEVhY2ggcmVjb3JkIHJlcHJlc2VudHMgYSBwcm9mZXNzaW9uYWwgYmFzZWJhbGwgdGVhbSBmcm9tIHRoZSB5ZWFycyAxODcxIHRvIDIwMDYgaW5jbHVzaXZlLiBFYWNoIHJlY29yZCBoYXMgdGhlIHBlcmZvcm1hbmNlIG9mIHRoZSB0ZWFtIGZvciB0aGUgZ2l2ZW4geWVhciwgd2l0aCBhbGwgb2YgdGhlIHN0YXRpc3RpY3MgYWRqdXN0ZWQgdG8gbWF0Y2ggdGhlIHBlcmZvcm1hbmNlIG9mIGEgMTYyIGdhbWUgc2Vhc29uLg0KDQojIyBPYmplY3RpdmUgDQoNClRoZSBvYmplY3RpdmUgaXMgdG8gYnVpbGQgYSBtdWx0aXBsZSBsaW5lYXIgcmVncmVzc2lvbiBtb2RlbCBvbiB0aGUgdHJhaW5pbmcgZGF0YSB0byBwcmVkaWN0IHRoZSBudW1iZXIgb2Ygd2lucyBmb3IgdGhlIHRlYW0uIHdlIGNhbiBvbmx5IHVzZSB0aGUgdmFyaWFibGVzIGdpdmVuIHRvIHVzIChvciB2YXJpYWJsZXMgdGhhdCB3ZSBkZXJpdmUgZnJvbSB0aGUgdmFyaWFibGVzIHByb3ZpZGVkKS4gDQoNCiMjIDEuIERhdGEgRXhwbG9yYXRpb24NCg0KDQojIyMgRGF0YSBTdW1tZXJ5IA0KDQpgYGB7ciwgZWNobz1GQUxTRX0NCiNJbXBvcnQgcmVxdWlyZWQgbGlicmFyaWVzDQpsaWJyYXJ5KHRpZHlyKQ0KbGlicmFyeSh6b28pDQpsaWJyYXJ5KHBhc3RlY3MpDQpsaWJyYXJ5KGRwbHlyKQ0KbGlicmFyeShnZ3Bsb3QyKQ0KbGlicmFyeShjb3JycikNCmxpYnJhcnkoR0dhbGx5KQ0KbGlicmFyeShjb3JycGxvdCkNCmxpYnJhcnkoZ2djb3JycGxvdCkNCmxpYnJhcnkocmVzaGFwZTIpDQpgYGANCg0KDQpgYGB7cn0NCiNJbXBvcnQgdGhlIGRhdGENCkRhdGEgPC0gcmVhZC5jc3YoIm1vbmV5YmFsbC10cmFpbmluZy1kYXRhLmNzdiIpDQpoZWFkKERhdGEpDQpgYGANCg0KV2UgY2FuIHNlZSB0aGF0IHRoZSBkYXRhIGNvbnRhaW4gMTcgY29sdW1ucyBhbmQgMjI3NiBvYnNlcnZhdGlvbnMgb3IgcmVjb3Jkcy4gVGhlIGZpcnN0IGNvbHVtbiBpcyB0aGUgaW5kZXggd2hpY2ggd2lsbCBiZSBkZWxldGVkIGFzIGl0IGlzIG5vdCB1c2VmdWwuIA0KDQpgYGB7cn0NCiNSZW1vdmUgdGhlIGluZGV4DQpEYXRhMSA8LSBEYXRhIFstYygxKV0NCiNEYXRhMSRJTkRFWCA9IE5VTEwNCmBgYA0KDQoNCmBgYHtyfQ0KI0NoZWNrIHRoZSBTdW1tYXJ5DQpzdW1tYXJ5KERhdGExKQ0KYGBgDQpTdW1tYXJ5IG9mIHRoZSBkYXRhIGdpdmVzIGEgdXNlZnVsIGluZm9ybWF0aW9uIGFib3V0IGVhY2ggZmVhdHVyZSBpbmNsdWRpbmcgdGhlIG51bWJlciBvZiBOQSB2YWx1ZXMuIEl0IGlzIG9idmlvdXMgdGhhdCB3ZSBoYXZlIG1hbnkgTkEgdmFsdWVzLiANCg0KYGBge3J9DQojIENvbXB1dGUgZGVzY3JpcHRpdmUgc3RhdGlzdGljcw0KcmVzIDwtIHN0YXQuZGVzYyhEYXRhMSkNCnJvdW5kKHJlcywyKQ0KYGBgDQoNCmBgYHtyfQ0KI1RoZSBtZWFuIGZvciBlYWNoIGNvbHVtbiBpbiB0aGUgZGF0YQ0KY29sTWVhbnMoRGF0YTEpDQpgYGANCg0KYGBge3J9DQojVGhlIFN0YW5kYXJkIERldmlhdGlvbiBmb3IgZWFjaCBjb2x1bW4gaW4gdGhlIGRhdGENCnNhcHBseShEYXRhMSwgc2QpDQpgYGANCg0KYGBge3J9DQojVGhlIG1lZGlhbiBmb3IgZWFjaCBjb2x1bW4gaW4gdGhlIGRhdGENCmFwcGx5KERhdGExLDIsIG1lZGlhbikNCmBgYA0KDQojIyMgTWlzc2luZyBWbGF1ZXMNCg0KYGBge3J9DQojU2VhcmNoIGlmIHRoZXJlIGFyZSBhbnkgTkEgdmFsdWVzDQoNCnN1bShpcy5uYShEYXRhMSkpDQpgYGANCg0KYGBge3J9DQojV2UgYXJlIG5vdCBhYmxlIHRvIGRlbGV0ZSB0aGUgTkEgdmFsdWVzLiBXZSB3aWxsIHJlcGxhY2UgTkEgdmFsdWVzLg0KDQpEYXRhMiA9IHJlcGxhY2UoRGF0YTEsIFRSVUUsIGxhcHBseShEYXRhMSwgbmEuYWdncmVnYXRlKSkNCmBgYA0KDQpgYGB7cn0NCiNDb25maXJtIHRoZSBhbGwgTkEgdmFsdWVzIHdlcmUgcmVwbGFjZWQgYnkgdGhlIG1lYW4uDQpzdW0oaXMubmEoRGF0YTIpKQ0KYGBgDQoNCg0KYGBge3J9DQojQ29uZmlybSB0aGF0IGRhdGEgaXMgbnVtZXJpYw0Kc2FwcGx5KERhdGEyLCBpcy5udW1lcmljKQ0KYGBgDQoNCg0KIyMjIEdyYXBocw0KDQpgYGB7cn0NCmhpc3QoRGF0YTIkVEFSR0VUX1dJTlMpDQpgYGANCg0KVGhlIGhpc3RvZ3JhbSBvZiB0aGUgdGFyZ2V0X3dpbnMgY29sdW1uIGlzIG5vcm1hbGx5IGRpc3RyaWJ1dGVkLiANCg0KYGBge3J9DQpEYXRhMiAlPiUNCiAgZ2F0aGVyKHZhciwgdmFsdWUsIFRBUkdFVF9XSU5TOlRFQU1fRklFTERJTkdfRFApICU+JQ0KICBnZ3Bsb3QoLiwgYWVzKHZhbHVlKSkgKyANCiAgZ2VvbV9kZW5zaXR5KGNvbG9yID0gImJsdWUiKSArIA0KICBmYWNldF93cmFwKH52YXIsIHNjYWxlcz0gImZyZWUiLCBuY29sID0gNCkNCiAgICAgICAgIA0KYGBgDQoNCg0KYGBge3J9DQpEYXRhMiAlPiUNCiAgZ2F0aGVyKHZhciwgdmFsdWUsIFRBUkdFVF9XSU5TOlRFQU1fRklFTERJTkdfRFApICU+JQ0KICBnZ3Bsb3QoLiwgYWVzKHZhbHVlKSkgKyANCiAgZ2VvbV9ib3hwbG90KG5vdGNoID0gVFJVRSkgKyANCiAgZmFjZXRfd3JhcCh+dmFyLCBzY2FsZXM9ICJmcmVlIiwgbmNvbCA9IDQpDQpgYGANCg0KDQojIyMgQ29ycmVsYXRpb24NCg0KYGBge3J9DQojIFVzZSBwZWFyc29uIGNvcnJlbGF0aW9uDQpjb3Jycjo6IGNvcnJlbGF0ZSAoRGF0YTIsIG1ldGhvZCA9ICJwZWFyc29uIikNCg0KYGBgDQoNCg0KDQpgYGB7cn0NCmdnY29ycihEYXRhMikNCg0KYGBgDQoNCg0KDQpgYGB7cn0NCiNBZGQgY29ycmVsYXRpb24gY29lZmZpY2llbnRzDQpjb3JyIDwtIHJvdW5kKGNvcihEYXRhMiksIDEpDQpnZ2NvcnJwbG90KGNvcnIsIGhjLm9yZGVyID0gVFJVRSwgdHlwZSA9ICJsb3dlciIsDQogICBsYWIgPSBUUlVFKQ0KYGBgDQoNCg0KDQoNCiMgRGF0YSBQcmVwZXJhdGlvbg0KYGBge3IgaW1wb3J0aW5nIGRhdGEgc2V0fQ0KbW9uZXliYWxsX3RyYWluaW5nX2RhdGEgPSByZWFkLmNzdigibW9uZXliYWxsLXRyYWluaW5nLWRhdGEuY3N2IikNCmBgYA0KDQoNCmBgYHtyIGZpbmRpbmcgYWxsIE5BfQ0KbmFfY291bnQgPSBzYXBwbHkobW9uZXliYWxsX3RyYWluaW5nX2RhdGEsIGZ1bmN0aW9uKHkpIHN1bShpcy5uYSh5KSkpDQpuYV9jb3VudCA9IGRhdGEuZnJhbWUobmFfY291bnQpDQpuYV9jb3VudCAlPiUNCiAgYXJyYW5nZShkZXNjKG5hX2NvdW50KSkgJT4lDQogIG11dGF0ZSh0b3RhbF9yb3dzID0gbnJvdyhtb25leWJhbGxfdHJhaW5pbmdfZGF0YSkpICU+JQ0KICBtdXRhdGUocGVyY2VudF9taXNzaW5nID0gbmFfY291bnQgLyB0b3RhbF9yb3dzKQ0KYGBgDQpXZSBjYW4gc2VlIHRoYXQgKipURUFNX0JBVFRJTkdfSEJQKiogaXMgbWlzc2luZyA5MSUgb2YgaXRzIGRhdGEgYW5kICoqVEVBTV9CQVNFUlVOX0NTKiogaXMgbWlzc2luZyBhcm91bmQgMzQlIG9mIGl0cyBkYXRhLiBUaGlzIGlzIGEgbG90IG9mIGRhdGEgbWlzc2luZyB3aGljaCBpcyB3aHkgdGhvc2UgY29sdW1ucyB3aWxsIGJlIHJlbW92aW5nIHRoZXNlLiBCYXNlZCBvbiBvbmxpbmUgcmVhZGluZyB0aGVyZSBpcyBubyBkZWZpbml0ZSBjdXQgb2YgZm9yIGhvdyBtdWNoIGRhdGEgb25lIHNob3VsZCBiZSBtaXNzaW5nIGJlZm9yZSByZW1vdmluZyBhIGNvbHVtbiwgYnV0IGl0IGlzIGFsd2F5cyBiZXR0ZXIgdG8gaGF2ZSBtb3JlIGRhdGEuIFdpdGggdGhlIG90aGVyIGNvbHVtbnMgdGhhdCBhcmUgbWlzc2luZyAxMCUgb2YgaXRzIGRhdGEgbWF5YmUgd2UgY2FuIGZpbGwgdGhvc2UgaW4gd2l0aCB0aGUgbWVhbiBhbmQgbWVkaWFuLCBvciBlbnRpcmVseSByZW1vdmUgdGhlIHJvdyBhcyB0aGVyZSBzaG91bGQgYmUgZW5vdWdoIGRhdGEgbGVmdCB0byB0cmFpbiB0aGUgbW9kZWwuDQoNCmBgYHtyIHJlbW92aW5nIGNvbHVtbn0NCm1vbmV5YmFsbF9zdWJzZXQgPSBzdWJzZXQobW9uZXliYWxsX3RyYWluaW5nX2RhdGEsIHNlbGVjdD0tYyhURUFNX0JBVFRJTkdfSEJQLCBURUFNX0JBU0VSVU5fQ1MsIElOREVYKSkNCmBgYA0KDQoNCiMjIFJlcGxhY2luZyBOQSB3aXRoIE1lZGlhbg0KV2Ugd2lsbCBuZWVkIHRvIGxvb2sgYXQgdGhlIGRpc3RyaWJ1dGlvbiBvZiB0aGUgY29sdW1ucyB3aXRoIG1pc3NpbmcgZGF0YSBpbiBvcmRlciB0byBkZWNpZGUgaWYgd2Ugd2lsbCBiZSB1c2luZyB0aGUgbWVkaWFuIG9yIG1lYW4gdG8gZmlsbCBpbiB0aGUgbWlzc2luZyBkYXRhDQoNCmBgYHtyfQ0KbWlzc2luZ19kYXRhID0gc3Vic2V0KG1vbmV5YmFsbF9zdWJzZXQsIHNlbGVjdCA9IGMoVEVBTV9GSUVMRElOR19EUCwgVEVBTV9CQVNFUlVOX1NCLCBURUFNX0JBVFRJTkdfU08sIFRFQU1fUElUQ0hJTkdfU08pKQ0KbWlzc2luZ19kYXRhID0gbWVsdChtaXNzaW5nX2RhdGEpDQoNCmdncGxvdChtaXNzaW5nX2RhdGEsIGFlcyh4ID0gdmFsdWUpKSArIGdlb21faGlzdG9ncmFtKGJpbndpZHRoID0gMTApICsgZmFjZXRfd3JhcCh+dmFyaWFibGUsIHNjYWxlPSdmcmVlJykNCmBgYA0KV2UgY2FuIHNlZSB0aGF0IG5vdCBhbGwgdGhlIGRpc3RyaWJ1dGlvbiBhcmUgdW5pZm9ybSB3aXRoIGJlaW5nIGJpbW9kYWwgb3IgaGF2aW5nIGEgdGFpbC4gRm9yIHRoaXMgcmVhc29uIHdlIHdpbGwgYmUgdXNpbmcgdGhlIG1lZGlhbiB0byByZXBsYWNlIGFsbCB0aGUgTkEgdmFsdWVzIGFzIHRoZSBtZWRpYW4gaXMgbGVzcyBzdWNjZXBpdGFsIHRvIG91dGxpZXJzLg0KDQpgYGB7cn0NCnJlcGxhY2VfbmFfd2l0aF9tZWRpYW4gPSBmdW5jdGlvbih4KXsNCiAgeFtpcy5uYSh4KV0gPSBtZWRpYW4oeCwgbmEucm09VFJVRSkNCiAgcmV0dXJuKHgpDQp9DQoNCm1vbmV5YmFsbF9maWxsID0gYXBwbHkobW9uZXliYWxsX3N1YnNldCwgMiwgcmVwbGFjZV9uYV93aXRoX21lZGlhbikNCm1vbmV5YmFsbF9maWxsID0gYXMuZGF0YS5mcmFtZShtb25leWJhbGxfZmlsbCkNCmBgYA0KDQoNCg0KIyMgVHJhbnNmb3JtYXRpb24NCkNoZWNraW5nIGFsbCBvZiB0aGUgY29sdW1ucyB0byBzZWUgaWYgdGhleSBuZWVkIGFueSB0eXBlIG9mIHRyYW5zZm9ybWF0aW9uIG9uIHRoZSBjb2x1bW4gaW4gb3JkZXIgdG8gY3JlYXRlIGEgbGluZWFyIGxpbmUNCg0KYGBge3J9DQpwYXIobWZyb3c9YygyLDIpKQ0KDQoNCmZvciAoaSBpbiAyOm5jb2wobW9uZXliYWxsX2ZpbGwpKXsNCiAgDQogIHkgPSBtb25leWJhbGxfc3Vic2V0WywxXQ0KICB4ID0gbW9uZXliYWxsX3N1YnNldFssaV0NCiAgcGxvdCgNCiAgICB4LCANCiAgICB5LCAgIA0KICAgIHlsYWIgPSAnVEFSR0VUX1dJTlMnLA0KICAgIHhsYWIgPSBuYW1lcyhtb25leWJhbGxfZmlsbClbaV0NCiAgKQ0KfQ0KYGBgDQpXZSBjYW4gc2VlIHRoYXQgbm9uZSBvZiB0aGUgY29sdW1ucyBhcmUgcmVhbCBnb29kIGNhbmRpZGF0ZXMgZm9yIGEgbG9nIHRyYW5zZm9ybWF0aW9uLiBUaGUgcmVhc29uIGlzIGJlY2F1c2UgYSBsb2cgdHJhbnNmb3JtYXRpb24gb24gdGhlIGNvbHVtbnMgd2lsbCBub3QgY3JlYXRlIGEgbW9yZSBsaW5lYXIgbGluZSB3aXRoIGFueSBvZiB0aGVzZSBjb2x1bW5zIA0KDQoNCiMjIFB1dHRpbmcgVGVhbXMgSW50byBCdWNrZXRzDQoNCldlIHdpbGwgYmUgcHV0dGluZyB0aGUgZGF0YXNldCBpbnRvIGJ1Y2tldHMgYmFzZWQgb24gdGhlIHRlYW1zIHdpbm5pbmcgc2NvcmUgYXMgdGhpcyB3aWxsIGFsbG93IHVzIHRvIHNlZSBpZiB0aGVyZSBpcyBhbnkgcGF0dGVybnMgYmV0d2VlbiB3ZWFrIGFuZCBzdHJvbmcgdGVhbXMuDQoNCmBgYHtyfQ0KbW9uZXliYWxsX2ZpbGwkVEVBTV9UWVBFID0gY3V0KG1vbmV5YmFsbF9zdWJzZXRbLCdUQVJHRVRfV0lOUyddLCBicmVha3M9YygwLCA3MywgMTQ2KSwgaW5jbHVkZS5sb3dlc3QgPSBUUlVFLCBsYWJlbHMgPSBjKCdXZWFrJywgJ1N0cm9uZycpKQ0KYGBgDQoNCg0KIyMgQ3JlYXRpbmcgVG90YWwgSGl0cw0KQ3JlYXRpbmcgYSBjb2x1bW4gd2hpY2ggaW5jbHVkZXMgdGhlIHRvdGFsIGFtb3VudCBvZiBoaXRzIGEgdGVhbSBoYXMNCg0KYGBge3J9DQptb25leWJhbGxfZmlsbCRURUFNX0JBVFRJTkdfVE9UQUwgPSAobW9uZXliYWxsX2ZpbGwkVEVBTV9CQVRUSU5HX0ggKyAoMiAqIG1vbmV5YmFsbF9maWxsJFRFQU1fQkFUVElOR18yQikgKyAoMyAqIG1vbmV5YmFsbF9maWxsJFRFQU1fQkFUVElOR18zQikgKyAoNCAqIG1vbmV5YmFsbF9maWxsJFRFQU1fQkFUVElOR19IUikpDQpgYGANCg0KYGBge3J9DQpnZ3Bsb3QobW9uZXliYWxsX2ZpbGwsIGFlcyh4PVRFQU1fQkFUVElOR19UT1RBTCwgeT1UQVJHRVRfV0lOUykpICsgZ2VvbV9zbW9vdGgobWV0aG9kPSdsbScpICsgZ2VvbV9wb2ludChhZXMoY29sb3I9VEVBTV9UWVBFKSkNCmBgYA0KDQojIyBIaXQgUGVyY2VudGFnZQ0KV2Ugd291bGQgbGlrZSB0byBjcmVhdGUgYSBjb2x1bW4gd2hpY2ggc3RhdGVzIHdoYXQgaXMgdGhlIHRlYW1zIGhpdC9iYXNlIHRoZXkgZ2V0IHBlciBnYW1lLiBUaGlzIHdpbGwgYmUgY2FsY3VsYXRlZCBieSBzdW1taW5nIHRoZSB0b3RhbCBhbW91bnQgb2YgaGl0cyBhIHRlYW0gZ2V0cyBhbmQgZGl2aWRpbmcgMTYyIGdhbWUgc2Vhc29uLg0KDQpgYGB7cn0NCm1vbmV5YmFsbF9maWxsJFRFQU1fQkFUVElOR19QRVJDRU5UID0gIG1vbmV5YmFsbF9maWxsJFRFQU1fQkFUVElOR19UT1RBTCAvIDE2Mg0KYGBgDQoNCmBgYHtyfQ0KZ2dwbG90KG1vbmV5YmFsbF9maWxsLCBhZXMoeD1URUFNX0JBVFRJTkdfUEVSQ0VOVCwgeT1UQVJHRVRfV0lOUykpICsgZ2VvbV9zbW9vdGgobWV0aG9kPSdsbScpICsgZ2VvbV9wb2ludChhZXMoY29sb3I9VEVBTV9UWVBFKSkNCmBgYA0KDQo=</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIkRBVEEgNjIxIEhvbWV3b3JrIDEiDQpzdWJ0aXRsZTogIkNyaXRpY2FsIFRoaW5raW5nIEdyb3VwIDEiDQpkYXRlOiAiYHIgZm9ybWF0KFN5cy50aW1lKCksICclQiAlZCwgJVknKWAiDQpvdXRwdXQ6DQogIGh0bWxfZG9jdW1lbnQ6IA0KICAgIHRvYzogdHJ1ZQ0KICAgIHRvY19mbG9hdDogdHJ1ZQ0KICBwZGZfZG9jdW1lbnQ6IGRlZmF1bHQNCiAgaHRtbF9ub3RlYm9vazogZGVmYXVsdA0KLS0tDQoNCiMjIE92ZXJ2aWV3DQoNCkluIHRoaXMgaG9tZXdvcmsgYXNzaWdubWVudCwgd2Ugd2lsbCBleHBsb3JlLCBhbmFseXplIGFuZCBtb2RlbCBhIGRhdGEgc2V0IGNvbnRhaW5pbmcgYXBwcm94aW1hdGVseSAyMjAwIHJlY29yZHMuIEVhY2ggcmVjb3JkIHJlcHJlc2VudHMgYSBwcm9mZXNzaW9uYWwgYmFzZWJhbGwgdGVhbSBmcm9tIHRoZSB5ZWFycyAxODcxIHRvIDIwMDYgaW5jbHVzaXZlLiBFYWNoIHJlY29yZCBoYXMgdGhlIHBlcmZvcm1hbmNlIG9mIHRoZSB0ZWFtIGZvciB0aGUgZ2l2ZW4geWVhciwgd2l0aCBhbGwgb2YgdGhlIHN0YXRpc3RpY3MgYWRqdXN0ZWQgdG8gbWF0Y2ggdGhlIHBlcmZvcm1hbmNlIG9mIGEgMTYyIGdhbWUgc2Vhc29uLg0KDQojIyBPYmplY3RpdmUgDQoNClRoZSBvYmplY3RpdmUgaXMgdG8gYnVpbGQgYSBtdWx0aXBsZSBsaW5lYXIgcmVncmVzc2lvbiBtb2RlbCBvbiB0aGUgdHJhaW5pbmcgZGF0YSB0byBwcmVkaWN0IHRoZSBudW1iZXIgb2Ygd2lucyBmb3IgdGhlIHRlYW0uIHdlIGNhbiBvbmx5IHVzZSB0aGUgdmFyaWFibGVzIGdpdmVuIHRvIHVzIChvciB2YXJpYWJsZXMgdGhhdCB3ZSBkZXJpdmUgZnJvbSB0aGUgdmFyaWFibGVzIHByb3ZpZGVkKS4gDQoNCiMjIDEuIERhdGEgRXhwbG9yYXRpb24NCg0KDQojIyMgRGF0YSBTdW1tZXJ5IA0KDQpgYGB7ciwgZWNobz1GQUxTRX0NCiNJbXBvcnQgcmVxdWlyZWQgbGlicmFyaWVzDQpsaWJyYXJ5KHRpZHlyKQ0KbGlicmFyeSh6b28pDQpsaWJyYXJ5KHBhc3RlY3MpDQpsaWJyYXJ5KGRwbHlyKQ0KbGlicmFyeShnZ3Bsb3QyKQ0KbGlicmFyeShjb3JycikNCmxpYnJhcnkoR0dhbGx5KQ0KbGlicmFyeShjb3JycGxvdCkNCmxpYnJhcnkoZ2djb3JycGxvdCkNCmxpYnJhcnkocmVzaGFwZTIpDQpgYGANCg0KDQpgYGB7cn0NCiNJbXBvcnQgdGhlIGRhdGENCkRhdGEgPC0gcmVhZC5jc3YoIm1vbmV5YmFsbC10cmFpbmluZy1kYXRhLmNzdiIpDQpoZWFkKERhdGEpDQpgYGANCg0KV2UgY2FuIHNlZSB0aGF0IHRoZSBkYXRhIGNvbnRhaW4gMTcgY29sdW1ucyBhbmQgMjI3NiBvYnNlcnZhdGlvbnMgb3IgcmVjb3Jkcy4gVGhlIGZpcnN0IGNvbHVtbiBpcyB0aGUgaW5kZXggd2hpY2ggd2lsbCBiZSBkZWxldGVkIGFzIGl0IGlzIG5vdCB1c2VmdWwuIA0KDQpgYGB7cn0NCiNSZW1vdmUgdGhlIGluZGV4DQpEYXRhMSA8LSBEYXRhIFstYygxKV0NCg0KYGBgDQoNCg0KYGBge3J9DQojQ2hlY2sgdGhlIFN1bW1hcnkNCnN1bW1hcnkoRGF0YTEpDQpgYGANClN1bW1hcnkgb2YgdGhlIGRhdGEgZ2l2ZXMgYSB1c2VmdWwgaW5mb3JtYXRpb24gYWJvdXQgZWFjaCBmZWF0dXJlIGluY2x1ZGluZyB0aGUgbnVtYmVyIG9mIE5BIHZhbHVlcy4gSXQgaXMgb2J2aW91cyB0aGF0IHdlIGhhdmUgbWFueSBOQSB2YWx1ZXMuIA0KDQpgYGB7cn0NCiMgQ29tcHV0ZSBkZXNjcmlwdGl2ZSBzdGF0aXN0aWNzDQpyZXMgPC0gc3RhdC5kZXNjKERhdGExKQ0Kcm91bmQocmVzLDIpDQpgYGANCg0KYGBge3J9DQojVGhlIG1lYW4gZm9yIGVhY2ggY29sdW1uIGluIHRoZSBkYXRhDQpjb2xNZWFucyhEYXRhMSkNCmBgYA0KDQpgYGB7cn0NCiNUaGUgU3RhbmRhcmQgRGV2aWF0aW9uIGZvciBlYWNoIGNvbHVtbiBpbiB0aGUgZGF0YQ0Kc2FwcGx5KERhdGExLCBzZCkNCmBgYA0KDQpgYGB7cn0NCiNUaGUgbWVkaWFuIGZvciBlYWNoIGNvbHVtbiBpbiB0aGUgZGF0YQ0KYXBwbHkoRGF0YTEsMiwgbWVkaWFuKQ0KYGBgDQoNCiMjIyBNaXNzaW5nIFZsYXVlcw0KDQpgYGB7cn0NCiNTZWFyY2ggaWYgdGhlcmUgYXJlIGFueSBOQSB2YWx1ZXMNCg0Kc3VtKGlzLm5hKERhdGExKSkNCmBgYA0KDQpgYGB7cn0NCiNXZSBhcmUgbm90IGFibGUgdG8gZGVsZXRlIHRoZSBOQSB2YWx1ZXMuIFdlIHdpbGwgcmVwbGFjZSBOQSB2YWx1ZXMuDQoNCkRhdGEyID0gcmVwbGFjZShEYXRhMSwgVFJVRSwgbGFwcGx5KERhdGExLCBuYS5hZ2dyZWdhdGUpKQ0KYGBgDQoNCmBgYHtyfQ0KI0NvbmZpcm0gdGhlIGFsbCBOQSB2YWx1ZXMgd2VyZSByZXBsYWNlZCBieSB0aGUgbWVhbi4NCnN1bShpcy5uYShEYXRhMikpDQpgYGANCg0KDQpgYGB7cn0NCiNDb25maXJtIHRoYXQgZGF0YSBpcyBudW1lcmljDQpzYXBwbHkoRGF0YTIsIGlzLm51bWVyaWMpDQpgYGANCg0KDQojIyMgR3JhcGhzDQoNCmBgYHtyfQ0KaGlzdChEYXRhMiRUQVJHRVRfV0lOUykNCmBgYA0KDQpUaGUgaGlzdG9ncmFtIG9mIHRoZSB0YXJnZXRfd2lucyBjb2x1bW4gaXMgbm9ybWFsbHkgZGlzdHJpYnV0ZWQuIA0KDQpgYGB7cn0NCkRhdGEyICU+JQ0KICBnYXRoZXIodmFyLCB2YWx1ZSwgVEFSR0VUX1dJTlM6VEVBTV9GSUVMRElOR19EUCkgJT4lDQogIGdncGxvdCguLCBhZXModmFsdWUpKSArIA0KICBnZW9tX2RlbnNpdHkoY29sb3IgPSAiYmx1ZSIpICsgDQogIGZhY2V0X3dyYXAofnZhciwgc2NhbGVzPSAiZnJlZSIsIG5jb2wgPSA0KQ0KICAgICAgICAgDQpgYGANCg0KDQpgYGB7cn0NCkRhdGEyICU+JQ0KICBnYXRoZXIodmFyLCB2YWx1ZSwgVEFSR0VUX1dJTlM6VEVBTV9GSUVMRElOR19EUCkgJT4lDQogIGdncGxvdCguLCBhZXModmFsdWUpKSArIA0KICBnZW9tX2JveHBsb3Qobm90Y2ggPSBUUlVFKSArIA0KICBmYWNldF93cmFwKH52YXIsIHNjYWxlcz0gImZyZWUiLCBuY29sID0gNCkNCmBgYA0KDQoNCiMjIyBDb3JyZWxhdGlvbg0KDQpgYGB7cn0NCiMgVXNlIHBlYXJzb24gY29ycmVsYXRpb24NCmNvcnJyOjogY29ycmVsYXRlIChEYXRhMiwgbWV0aG9kID0gInBlYXJzb24iKQ0KDQpgYGANCg0KDQoNCmBgYHtyfQ0KZ2djb3JyKERhdGEyKQ0KDQpgYGANCg0KDQoNCmBgYHtyfQ0KI0FkZCBjb3JyZWxhdGlvbiBjb2VmZmljaWVudHMNCmNvcnIgPC0gcm91bmQoY29yKERhdGEyKSwgMSkNCmdnY29ycnBsb3QoY29yciwgaGMub3JkZXIgPSBUUlVFLCB0eXBlID0gImxvd2VyIiwNCiAgIGxhYiA9IFRSVUUpDQpgYGANCg0KDQoNCg0KIyBEYXRhIFByZXBlcmF0aW9uDQpgYGB7ciBpbXBvcnRpbmcgZGF0YSBzZXR9DQptb25leWJhbGxfdHJhaW5pbmdfZGF0YSA9IHJlYWQuY3N2KCJtb25leWJhbGwtdHJhaW5pbmctZGF0YS5jc3YiKQ0KYGBgDQoNCg0KYGBge3IgZmluZGluZyBhbGwgTkF9DQpuYV9jb3VudCA9IHNhcHBseShtb25leWJhbGxfdHJhaW5pbmdfZGF0YSwgZnVuY3Rpb24oeSkgc3VtKGlzLm5hKHkpKSkNCm5hX2NvdW50ID0gZGF0YS5mcmFtZShuYV9jb3VudCkNCm5hX2NvdW50ICU+JQ0KICBhcnJhbmdlKGRlc2MobmFfY291bnQpKSAlPiUNCiAgbXV0YXRlKHRvdGFsX3Jvd3MgPSBucm93KG1vbmV5YmFsbF90cmFpbmluZ19kYXRhKSkgJT4lDQogIG11dGF0ZShwZXJjZW50X21pc3NpbmcgPSBuYV9jb3VudCAvIHRvdGFsX3Jvd3MpDQpgYGANCldlIGNhbiBzZWUgdGhhdCAqKlRFQU1fQkFUVElOR19IQlAqKiBpcyBtaXNzaW5nIDkxJSBvZiBpdHMgZGF0YSBhbmQgKipURUFNX0JBU0VSVU5fQ1MqKiBpcyBtaXNzaW5nIGFyb3VuZCAzNCUgb2YgaXRzIGRhdGEuIFRoaXMgaXMgYSBsb3Qgb2YgZGF0YSBtaXNzaW5nIHdoaWNoIGlzIHdoeSB0aG9zZSBjb2x1bW5zIHdpbGwgYmUgcmVtb3ZpbmcgdGhlc2UuIEJhc2VkIG9uIG9ubGluZSByZWFkaW5nIHRoZXJlIGlzIG5vIGRlZmluaXRlIGN1dCBvZiBmb3IgaG93IG11Y2ggZGF0YSBvbmUgc2hvdWxkIGJlIG1pc3NpbmcgYmVmb3JlIHJlbW92aW5nIGEgY29sdW1uLCBidXQgaXQgaXMgYWx3YXlzIGJldHRlciB0byBoYXZlIG1vcmUgZGF0YS4gV2l0aCB0aGUgb3RoZXIgY29sdW1ucyB0aGF0IGFyZSBtaXNzaW5nIDEwJSBvZiBpdHMgZGF0YSBtYXliZSB3ZSBjYW4gZmlsbCB0aG9zZSBpbiB3aXRoIHRoZSBtZWFuIGFuZCBtZWRpYW4sIG9yIGVudGlyZWx5IHJlbW92ZSB0aGUgcm93IGFzIHRoZXJlIHNob3VsZCBiZSBlbm91Z2ggZGF0YSBsZWZ0IHRvIHRyYWluIHRoZSBtb2RlbC4NCg0KYGBge3IgcmVtb3ZpbmcgY29sdW1ufQ0KbW9uZXliYWxsX3N1YnNldCA9IHN1YnNldChtb25leWJhbGxfdHJhaW5pbmdfZGF0YSwgc2VsZWN0PS1jKFRFQU1fQkFUVElOR19IQlAsIFRFQU1fQkFTRVJVTl9DUywgSU5ERVgpKQ0KYGBgDQoNCg0KIyMgUmVwbGFjaW5nIE5BIHdpdGggTWVkaWFuDQpXZSB3aWxsIG5lZWQgdG8gbG9vayBhdCB0aGUgZGlzdHJpYnV0aW9uIG9mIHRoZSBjb2x1bW5zIHdpdGggbWlzc2luZyBkYXRhIGluIG9yZGVyIHRvIGRlY2lkZSBpZiB3ZSB3aWxsIGJlIHVzaW5nIHRoZSBtZWRpYW4gb3IgbWVhbiB0byBmaWxsIGluIHRoZSBtaXNzaW5nIGRhdGENCg0KYGBge3J9DQptaXNzaW5nX2RhdGEgPSBzdWJzZXQobW9uZXliYWxsX3N1YnNldCwgc2VsZWN0ID0gYyhURUFNX0ZJRUxESU5HX0RQLCBURUFNX0JBU0VSVU5fU0IsIFRFQU1fQkFUVElOR19TTywgVEVBTV9QSVRDSElOR19TTykpDQptaXNzaW5nX2RhdGEgPSBtZWx0KG1pc3NpbmdfZGF0YSkNCg0KZ2dwbG90KG1pc3NpbmdfZGF0YSwgYWVzKHggPSB2YWx1ZSkpICsgZ2VvbV9oaXN0b2dyYW0oYmlud2lkdGggPSAxMCkgKyBmYWNldF93cmFwKH52YXJpYWJsZSwgc2NhbGU9J2ZyZWUnKQ0KYGBgDQpXZSBjYW4gc2VlIHRoYXQgbm90IGFsbCB0aGUgZGlzdHJpYnV0aW9uIGFyZSB1bmlmb3JtIHdpdGggYmVpbmcgYmltb2RhbCBvciBoYXZpbmcgYSB0YWlsLiBGb3IgdGhpcyByZWFzb24gd2Ugd2lsbCBiZSB1c2luZyB0aGUgbWVkaWFuIHRvIHJlcGxhY2UgYWxsIHRoZSBOQSB2YWx1ZXMgYXMgdGhlIG1lZGlhbiBpcyBsZXNzIHN1Y2NlcGl0YWwgdG8gb3V0bGllcnMuDQoNCmBgYHtyfQ0KcmVwbGFjZV9uYV93aXRoX21lZGlhbiA9IGZ1bmN0aW9uKHgpew0KICB4W2lzLm5hKHgpXSA9IG1lZGlhbih4LCBuYS5ybT1UUlVFKQ0KICByZXR1cm4oeCkNCn0NCg0KbW9uZXliYWxsX2ZpbGwgPSBhcHBseShtb25leWJhbGxfc3Vic2V0LCAyLCByZXBsYWNlX25hX3dpdGhfbWVkaWFuKQ0KbW9uZXliYWxsX2ZpbGwgPSBhcy5kYXRhLmZyYW1lKG1vbmV5YmFsbF9maWxsKQ0KYGBgDQoNCg0KDQojIyBUcmFuc2Zvcm1hdGlvbg0KQ2hlY2tpbmcgYWxsIG9mIHRoZSBjb2x1bW5zIHRvIHNlZSBpZiB0aGV5IG5lZWQgYW55IHR5cGUgb2YgdHJhbnNmb3JtYXRpb24gb24gdGhlIGNvbHVtbiBpbiBvcmRlciB0byBjcmVhdGUgYSBsaW5lYXIgbGluZQ0KDQpgYGB7cn0NCnBhcihtZnJvdz1jKDIsMikpDQoNCg0KZm9yIChpIGluIDI6bmNvbChtb25leWJhbGxfZmlsbCkpew0KICANCiAgeSA9IG1vbmV5YmFsbF9zdWJzZXRbLDFdDQogIHggPSBtb25leWJhbGxfc3Vic2V0WyxpXQ0KICBwbG90KA0KICAgIHgsIA0KICAgIHksICAgDQogICAgeWxhYiA9ICdUQVJHRVRfV0lOUycsDQogICAgeGxhYiA9IG5hbWVzKG1vbmV5YmFsbF9maWxsKVtpXQ0KICApDQp9DQpgYGANCldlIGNhbiBzZWUgdGhhdCBub25lIG9mIHRoZSBjb2x1bW5zIGFyZSByZWFsIGdvb2QgY2FuZGlkYXRlcyBmb3IgYSBsb2cgdHJhbnNmb3JtYXRpb24uIFRoZSByZWFzb24gaXMgYmVjYXVzZSBhIGxvZyB0cmFuc2Zvcm1hdGlvbiBvbiB0aGUgY29sdW1ucyB3aWxsIG5vdCBjcmVhdGUgYSBtb3JlIGxpbmVhciBsaW5lIHdpdGggYW55IG9mIHRoZXNlIGNvbHVtbnMgDQoNCg0KIyMgUHV0dGluZyBUZWFtcyBJbnRvIEJ1Y2tldHMNCg0KV2Ugd2lsbCBiZSBwdXR0aW5nIHRoZSBkYXRhc2V0IGludG8gYnVja2V0cyBiYXNlZCBvbiB0aGUgdGVhbXMgd2lubmluZyBzY29yZSBhcyB0aGlzIHdpbGwgYWxsb3cgdXMgdG8gc2VlIGlmIHRoZXJlIGlzIGFueSBwYXR0ZXJucyBiZXR3ZWVuIHdlYWsgYW5kIHN0cm9uZyB0ZWFtcy4NCg0KYGBge3J9DQptb25leWJhbGxfZmlsbCRURUFNX1RZUEUgPSBjdXQobW9uZXliYWxsX3N1YnNldFssJ1RBUkdFVF9XSU5TJ10sIGJyZWFrcz1jKDAsIDczLCAxNDYpLCBpbmNsdWRlLmxvd2VzdCA9IFRSVUUsIGxhYmVscyA9IGMoJ1dlYWsnLCAnU3Ryb25nJykpDQpgYGANCg0KDQojIyBDcmVhdGluZyBUb3RhbCBIaXRzDQpDcmVhdGluZyBhIGNvbHVtbiB3aGljaCBpbmNsdWRlcyB0aGUgdG90YWwgYW1vdW50IG9mIGhpdHMgYSB0ZWFtIGhhcw0KDQpgYGB7cn0NCm1vbmV5YmFsbF9maWxsJFRFQU1fQkFUVElOR19UT1RBTCA9IChtb25leWJhbGxfZmlsbCRURUFNX0JBVFRJTkdfSCArICgyICogbW9uZXliYWxsX2ZpbGwkVEVBTV9CQVRUSU5HXzJCKSArICgzICogbW9uZXliYWxsX2ZpbGwkVEVBTV9CQVRUSU5HXzNCKSArICg0ICogbW9uZXliYWxsX2ZpbGwkVEVBTV9CQVRUSU5HX0hSKSkNCmBgYA0KDQpgYGB7cn0NCmdncGxvdChtb25leWJhbGxfZmlsbCwgYWVzKHg9VEVBTV9CQVRUSU5HX1RPVEFMLCB5PVRBUkdFVF9XSU5TKSkgKyBnZW9tX3Ntb290aChtZXRob2Q9J2xtJykgKyBnZW9tX3BvaW50KGFlcyhjb2xvcj1URUFNX1RZUEUpKQ0KYGBgDQoNCiMjIEhpdCBQZXJjZW50YWdlDQpXZSB3b3VsZCBsaWtlIHRvIGNyZWF0ZSBhIGNvbHVtbiB3aGljaCBzdGF0ZXMgd2hhdCBpcyB0aGUgdGVhbXMgaGl0L2Jhc2UgdGhleSBnZXQgcGVyIGdhbWUuIFRoaXMgd2lsbCBiZSBjYWxjdWxhdGVkIGJ5IHN1bW1pbmcgdGhlIHRvdGFsIGFtb3VudCBvZiBoaXRzIGEgdGVhbSBnZXRzIGFuZCBkaXZpZGluZyAxNjIgZ2FtZSBzZWFzb24uDQoNCmBgYHtyfQ0KbW9uZXliYWxsX2ZpbGwkVEVBTV9CQVRUSU5HX1BFUkNFTlQgPSAgbW9uZXliYWxsX2ZpbGwkVEVBTV9CQVRUSU5HX1RPVEFMIC8gMTYyDQpgYGANCg0KYGBge3J9DQpnZ3Bsb3QobW9uZXliYWxsX2ZpbGwsIGFlcyh4PVRFQU1fQkFUVElOR19QRVJDRU5ULCB5PVRBUkdFVF9XSU5TKSkgKyBnZW9tX3Ntb290aChtZXRob2Q9J2xtJykgKyBnZW9tX3BvaW50KGFlcyhjb2xvcj1URUFNX1RZUEUpKQ0KYGBgDQoNCg==</div>
 
 
 

@@ -49,7 +49,7 @@ We can see that the data contain 17 columns and 2276 observations or records. Th
 ```{r}
 #Remove the index
 Data1 <- Data [-c(1)]
-#Data1$INDEX = NULL
+
 ```
 
 
