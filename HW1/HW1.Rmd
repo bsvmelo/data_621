@@ -161,6 +161,8 @@ ggcorrplot(corr, hc.order = TRUE, type = "lower",
 
 
 # Data Preperation
+In this section we will be looking at the different ways to prepare the data for modeling. We will show the different steps that we took and the reasoning why we did certain transformations, replacement and creation of columns.
+
 ```{r importing data set}
 moneyball_training_data = read.csv("moneyball-training-data.csv")
 ```
@@ -174,15 +176,16 @@ na_count %>%
   mutate(total_rows = nrow(moneyball_training_data)) %>%
   mutate(percent_missing = na_count / total_rows)
 ```
-We can see that **TEAM_BATTING_HBP** is missing 91% of its data and **TEAM_BASERUN_CS** is missing around 34% of its data. This is a lot of data missing which is why those columns will be removing these. Based on online reading there is no definite cut of for how much data one should be missing before removing a column, but it is always better to have more data. With the other columns that are missing 10% of its data maybe we can fill those in with the mean and median, or entirely remove the row as there should be enough data left to train the model.
+Initially when looking at the data we can see that **TEAM_BATTING_HBP** is missing 91% of its data and **TEAM_BASERUN_CS** is missing around 34% of its data. This is a lot of data missing which is why those columns will be removing these. Based on online reading there is no definite cut of for how much data one should be missing before removing a column, but it is always better to have more data. The columns **TEAM_FIELDING_DP**, **TEAM_BASERUN_SB**, **TEAM_BATTING_SO**, and **TEAM_PITCHING_SO** are missing around 12% - 4% of its data and can fill those in with using mean and median. In the next section we will look at to see whether using the mean or median would be the better choice in filling the missing data.
 
 ```{r removing column}
 moneyball_subset = subset(moneyball_training_data, select=-c(TEAM_BATTING_HBP, TEAM_BASERUN_CS, INDEX))
 ```
 
 
-## Replacing NA with Median
-We will need to look at the distribution of the columns with missing data in order to decide if we will be using the median or mean to fill in the missing data
+## Replacing NA with Mean or Median
+
+In this section we will need to decide whether to fill the missing data using the mean or median. We will need to look at the distribution of each of the columns with missing data in order to decide if we will be using the median or mean to fill in the missing data
 
 ```{r}
 missing_data = subset(moneyball_subset, select = c(TEAM_FIELDING_DP, TEAM_BASERUN_SB, TEAM_BATTING_SO, TEAM_PITCHING_SO))
@@ -190,7 +193,7 @@ missing_data = melt(missing_data)
 
 ggplot(missing_data, aes(x = value)) + geom_histogram(binwidth = 10) + facet_wrap(~variable, scale='free')
 ```
-We can see that not all the distribution are uniform with being bimodal or having a tail. For this reason we will be using the median to replace all the NA values as the median is less succepital to outliers.
+Looking at the above graphs we can see that not all the distribution are uniform distribution. We can see that **TEAM_BATTING_SO** is a bimodal distribution, **TEAM_BASERUN_SB** is skewed to the right, and **TEAM_PITCHING_SO** has very large outliers. For this reason we will be using the median to replace all the missing data as the median is less susceptible to outliers and non-uniform distributions.
 
 ```{r}
 replace_na_with_median = function(x){
@@ -205,7 +208,7 @@ moneyball_fill = as.data.frame(moneyball_fill)
 
 
 ## Transformation
-Checking all of the columns to see if they need any type of transformation on the column in order to create a linear line
+We will also be needing to check all of the columns to see if they will need any type of transformation in order to create a linear line. We will be be graphing all the columns with **TARGET_WINS** as the response variable. This will allow us to see if there are any columns that can be transformed in order to improve the model.
 
 ```{r}
 par(mfrow=c(2,2))
@@ -223,12 +226,12 @@ for (i in 2:ncol(moneyball_fill)){
   )
 }
 ```
-We can see that none of the columns are real good candidates for a log transformation. The reason is because a log transformation on the columns will not create a more linear line with any of these columns 
+Looking at the graphs above we can see that none of the columns are real good candidates for transformation.
 
 
 ## Putting Teams Into Buckets
 
-We will be putting the dataset into buckets based on the teams winning score as this will allow us to see if there is any patterns between weak and strong teams.
+We will be putting the dataset into buckets based on the teams winning score as this will allow us to see if there is any patterns between weak and strong teams. The teams will be split into two groups **Strong** and **Weak** based on the **TARGET_WINS** column. 
 
 ```{r}
 moneyball_fill$TEAM_TYPE = cut(moneyball_subset[,'TARGET_WINS'], breaks=c(0, 73, 146), include.lowest = TRUE, labels = c('Weak', 'Strong'))
