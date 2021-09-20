@@ -259,4 +259,71 @@ moneyball_fill$TEAM_BATTING_PERCENT =  moneyball_fill$TEAM_BATTING_TOTAL / 162
 ```{r}
 ggplot(moneyball_fill, aes(x=TEAM_BATTING_PERCENT, y=TARGET_WINS)) + geom_smooth(method='lm') + geom_point(aes(color=TEAM_TYPE))
 ```
+## Model Building
+
+At the beginning, we were presented with 16 independent variables. It makes sense to exclude index since it is not relevant. It also makes sense to exclude team_batting_hbp and team_batting_cs since they are comprised of so many N/As. We are thus able to concentrate on the 13 remaining variables, pursuing continuous incremental model improvement.
+
+Our models are outlined below:
+
+  lmodel1 - an "all-in" model that includes all 13 remaining variables
+  lmodel2 - a model that strips out outliers
+  lmodel3 - a model that eliminates impertinent attributes
+  
+```{r}
+
+names(moneyball_fill) <- tolower(names(moneyball_fill))
+#let's strip out the team type since it doesn't enhance the model
+train1 <- subset(moneyball_fill, select = -c(team_type))
+head(train1)
+```
+
+We'll start with the all-in model
+```{r}
+
+lmodel1 <- lm(target_wins ~ ., data = train1)
+summary(lmodel1)
+```
+So in looking at the all-in model, we can identify how the model behaves intuitively and not-so-intuitively. For example, we see the following variables as having positive coefficients: team_batting_h, team_batting_3b, team_baserun_sb, and team_pitching_strikeouts. These make sense, as you'd expect a team to win games that gets hits, hits triples, steals bases efficiently, and strikes out opponents. However, some of the positive coefficients don't make as much sense. For example, we would expect teams whose pitchers give up lots of home runs to not win very many games. This certainly warrants further analysis.
+
+For negative coefficients, we'd obviously expect teams whose players make a lot of errors to not win at a high rate. However, hitting doubles and fielding double plays have negative coefficients as well, which are not intuitive at all.
+
+A majority of the variables that we are assessing appear to contribute to predicting wins. We can gain some comfort in our model due to the low RSE (13.07) and satisfactory F-statistic (80.1), and we should feel ok about the overall efficacy of our model. However, the Adjusted R-square well under 1 is cause for some concern, but we can look to improve that in future iterations of the model. 
+
+What else can we do to improve our model? Well, its predictive value might be enhanced by eliminating some problematic outliers. So let's take a look at if it makes sense to do so.
+```{r}
+res1 <- resid(lmodel1)
+plot(fitted(lmodel1), res1)
+
+abline(0,0)
+
+qqnorm(res1, pch = 1, frame = FALSE)
+```
+The data is not evenly scattered but we don't detect any unexpected non-linear patter. The normal QQ looks good as well with a relatively straight line. We can spot some outliers that we should drill down on using Cook's Distance. Then, we can then attempt to strip them out to improve our model somewhat.
+
+```{r}
+cooksd <- cooks.distance(lmodel1)
+sample_size <- nrow(train1)
+plot(cooksd, pch="*", cex=2, main="Influential Obs by Cooks distance")  # plot cook's distance
+abline(h = 4/sample_size, col="red")  # add cutoff line
+text(x=1:length(cooksd)+1, y=cooksd, labels=ifelse(cooksd>4/sample_size, names(cooksd),""), col="red")
+```
+We can spot two that breach our threshold, so now we set about removing them. Next, we can re-run our initial all-in model to see if dropping the outliers has any impact on improving the model.
+
+```{r}
+influential <- as.numeric(names(cooksd)[(cooksd > (4/sample_size))])
+train1_strip <- train1[-influential, ]
+
+lmodel2 <- lm(target_wins ~ ., data = train1_strip)
+summary(lmodel2)
+```
+This looks like good news. Our RSE is down, and our F-statistic is up. Even our Adjusted R-Squared value is up slightly from .31. Nevertheless, the explanatory value of our model remains limited without this last number increasing significantly. And we can clearly see some variables with high p-values that ought to be removed in order to improve our model. Let's proceed with removing team_batting_hr and team_picthing_hr.
+
+```{r}
+
+train3 <- subset(train1_strip, select = -c(team_batting_hr,team_pitching_hr))
+lmodel3 <- lm(target_wins ~ ., data = train3)
+summary(lmodel3)
+```
+
+We've improved the model incrementally by removing variables with high p-values, and our RSE and F-stat look better The explanatory power of our model, however, remains in doubt due to the Adjusted R-Squared value that remains low, even though it's improved from the previous model. What stands out here is that triples hit, bases stolen, and gaining walks remain the overall strongest positive coefficients, while team_fielding_dp remains the largest negative coefficient, which is counter-intuitive at first blush. However, one thing necessary for a double play is at least one opponent runner on base. Those teams that earn a high number of double plays are only able to do so because their pitchers are allowing runners on base to begin with. 
 
