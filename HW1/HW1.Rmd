@@ -40,7 +40,7 @@ library(reshape2)
 
 ```{r}
 #Import the data
-Data <- read.csv("moneyball-training-data.csv")
+Data <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW1/moneyball-training-data.csv")
 head(Data)
 ```
 
