@@ -44,12 +44,11 @@ Data <- read.csv("moneyball-training-data.csv")
 head(Data)
 ```
 
-We can see that the data contain 17 columns and 2276 observations or records. The first column is the index which will be deleted as it is not useful. 
+We can see that the data contain 17 columns and 2276 observations or records. The first column is the index which will be deleted as it is not useful. The target variable is the "TARGET_WINS". Notice that the dateset is numerical and does not have any categorical variables.
 
 ```{r}
 #Remove the index
 Data1 <- Data [-c(1)]
-
 ```
 
 
@@ -57,15 +56,15 @@ Data1 <- Data [-c(1)]
 #Check the Summary
 summary(Data1)
 ```
-Summary of the data gives a useful information about each feature including the number of NA values. It is obvious that we have many NA values. 
 
-```{r}
-# Compute descriptive statistics
-res <- stat.desc(Data1)
-round(res,2)
-```
+Summary of the data gives a useful information about each variable. 
 
-```{r}
+- There is a significant number of NA  values. 
+
+- The average wins for a team is about 81.
+
+
+````{r}
 #The mean for each column in the data
 colMeans(Data1)
 ```
@@ -80,17 +79,16 @@ sapply(Data1, sd)
 apply(Data1,2, median)
 ```
 
+
 ### Missing Vlaues
 
 ```{r}
 #Search if there are any NA values
-
 sum(is.na(Data1))
 ```
 
 ```{r}
 #We are not able to delete the NA values. We will replace NA values.
-
 Data2 = replace(Data1, TRUE, lapply(Data1, na.aggregate))
 ```
 
@@ -100,30 +98,22 @@ sum(is.na(Data2))
 ```
 
 
-```{r}
-#Confirm that data is numeric
-sapply(Data2, is.numeric)
-```
-
-
-### Graphs
-
-```{r}
-hist(Data2$TARGET_WINS)
-```
-
-The histogram of the target_wins column is normally distributed. 
-
+### Distribution
 ```{r}
 Data2 %>%
   gather(var, value, TARGET_WINS:TEAM_FIELDING_DP) %>%
   ggplot(., aes(value)) + 
   geom_density(color = "blue") + 
-  facet_wrap(~var, scales= "free", ncol = 4)
+  facet_wrap(~var, scales= "free", ncol = 5)
          
 ```
 
 
+The distribution of the target variable "target_wins" column is normally distributed and there are many average teams.
+
+The distribution also show that BASERUN_SB and BATTING 3B are right skew variables. In addition, BATTING_HR and PITCHING_HR are bimodal.
+
+### Boxplot
 ```{r}
 Data2 %>%
   gather(var, value, TARGET_WINS:TEAM_FIELDING_DP) %>%
@@ -132,23 +122,24 @@ Data2 %>%
   facet_wrap(~var, scales= "free", ncol = 4)
 ```
 
+The box-plots above give us idea about the spread of each variable in the data. The box-plots reveal significant outliers.
 
 ### Correlation
 
 ```{r}
 # Use pearson correlation
-corrr:: correlate (Data2, method = "pearson")
+Data2 %>% correlate() %>% focus(TARGET_WINS)
 
 ```
 
+These correlations do not show a strong relationship. This indicate presence of ‘noise’ in these relationships.
+It is interesting to note allowing hits have little positive impacts on wins. 
+It is also noteworthy that pitching strikeouts by batters and hits allowed are negatively correlated with winning. I assume the correlations are affected by the outliers.
 
 
 ```{r}
 ggcorr(Data2)
-
 ```
-
-
 
 ```{r}
 #Add correlation coefficients
@@ -156,6 +147,7 @@ corr <- round(cor(Data2), 1)
 ggcorrplot(corr, hc.order = TRUE, type = "lower",
    lab = TRUE)
 ```
+
 
 
 
