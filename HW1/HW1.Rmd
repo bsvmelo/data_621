@@ -1,14 +1,46 @@
 ---
 title: "DATA 621 Homework 1"
-subtitle: "Critical Thinking Group 1"
+author: "Critical Thinking Group 1"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
-  html_document: 
-    toc: true
-    toc_float: true
-  pdf_document: default
-  html_notebook: default
+  pdf_document:
+    toc: yes
+    toc_depth: 6
+  html_document:
+    toc: yes
+    toc_depth: '2'
+    smart: no
+  word_document:
+    toc: yes
+    toc_depth: '2'
 ---
+\begin{center}
+\bigskip
+\bigskip
+\bigskip
+Prepared for:\\
+\medskip
+Prof. Dr. Nasrin Khansari\\
+\smallskip
+City University of New York, School of Professional Studies - Data 621\\
+\bigskip
+DATA 621 – Business Analytics and Data Mining\\
+\medskip
+Prepared by:\\
+\medskip
+Critical Thinking Group  1\\ 
+\medskip
+Vic Chan\\ 
+\smallskip
+Evan McLaughlin\\  
+\smallskip
+Bruno de Melo\\
+\smallskip
+Anjal Hussan\\
+\smallskip
+Zhouxin Shi\\
+\end{center}
+
 
 ## Overview
 
@@ -23,7 +55,7 @@ The objective is to build a multiple linear regression model on the training dat
 
 ### Data Summery 
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, results='hide' }
 #Import required libraries
 library(tidyr)
 library(zoo)
@@ -164,7 +196,7 @@ ggcorrplot(corr, hc.order = TRUE, type = "lower",
 In this section we will be looking at the different ways to prepare the data for modeling. We will show the different steps that we took and the reasoning why we did certain transformations, replacement and creation of columns.
 
 ```{r importing data set}
-moneyball_training_data = read.csv("moneyball-training-data.csv")
+moneyball_training_data = read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW1/moneyball-training-data.csv")
 ```
 
 
@@ -326,4 +358,90 @@ summary(lmodel3)
 ```
 
 We've improved the model incrementally by removing variables with high p-values, and our RSE and F-stat look better The explanatory power of our model, however, remains in doubt due to the Adjusted R-Squared value that remains low, even though it's improved from the previous model. What stands out here is that triples hit, bases stolen, and gaining walks remain the overall strongest positive coefficients, while team_fielding_dp remains the largest negative coefficient, which is counter-intuitive at first blush. However, one thing necessary for a double play is at least one opponent runner on base. Those teams that earn a high number of double plays are only able to do so because their pitchers are allowing runners on base to begin with. 
+
+## SELECT MODELS
+
+Before we select our model, let's find out the properties of our models so that we can compare the models using the properties i.e. R2, MSE, F-statistic, Number of Variables (K), Number of Observations (N), and number of observations in the original training set that were excluded from the model. 
+
+```{r echo=FALSE, message=FALSE}
+results = NULL
+models = list(model1 = lmodel1, 
+              model2 = lmodel2,
+              model3 = lmodel3)
+
+for (i in names(models)){
+  s = summary(models[[i]])
+  name = i
+  mse = mean(s$residuals^2)
+  r2 = s$r.squared
+  f = s$fstatistic[1]
+  k = s$fstatistic[2]
+  n = s$fstatistic[3]
+  removedObservations = nrow(train1)-n
+  results = rbind(results, data.frame(name = name, 
+                                      rsquared = r2,
+                                      mse = mse,
+                                      f=f,
+                                      k=k,
+                                      n=n,
+                                      RemovedObservations=removedObservations
+                                      )
+                  )
+}
+
+rownames(results) = NULL
+knitr::kable(results)
+```
+
+### Final Model Review
+
+First let's review all the expected diagnostics of our final model.
+
+Our final model is: 
+
+```{r, echo=FALSE, message=FALSE}
+lmodel3.call <- summary(lmodel3)$call
+print(lmodel3.call[2])
+```
+
+Let's review the diagnostic plots and a plot of the residuals.  
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+plot(lmodel3)
+plot(sqrt(lmodel3$residuals))
+```
+
+### Plot the top Coefficients of our model
+
+What's interesting here and may point to a poor model is that essentially our intercept coefficient gives each observation 185.1 wins, and then most other coefficients subtract from there. For visual ease, the coefficients below have been scaled.   
+
+```{r, echo=FALSE, message=FALSE}
+coef <- data.frame(sort(lmodel3$coefficients))
+coef$names <- rownames(coef)
+names(coef) <- c("coef","names")
+imp_coef <- rbind(head(coef,10),
+                  tail(coef,10))
+imp_coef$coef <- scale(imp_coef$coef)
+ggplot(imp_coef) +
+    geom_bar(aes(x=reorder(names,coef),y=coef),
+             stat="identity") +
+    coord_flip() +
+    ggtitle("Most Important 20 Coefficents \n in our Final Model (Scaled)") +
+    theme(axis.title=element_blank(), plot.title=element_text(hjust=0.5))
+```
+### Predictions
+
+We had to modify our predictions a bit because our final model a) predicted wins > 260 for one observation and b) -783 wins for another.   This is clearly poor performance and it may be important to find better options for our model.   
+
+For now, we simply modify these outlier observations so those maxs and mins are replaced with the maxes and mins of our final training set.  
+```{r echo=FALSE, message=FALSE}
+eval_data <- read.csv('https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW1/moneyball-evaluation-data.csv', header=T)
+
+m1_prediction <- predict(lmodel3, eval_data)
+m1_prediction <- data.frame(m1_prediction)
+m1_prediction[m1_prediction$m1_prediction > max(train3$TARGET_WINS), ] <- max(train3$TARGET_WINS)
+m1_prediction[m1_prediction$m1_prediction < min(train3$TARGET_WINS), ] <- min(train3$TARGET_WINS)
+write.csv(m1_prediction, "testPredictions.csv")
+```
+
 
