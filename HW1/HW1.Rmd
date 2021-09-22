@@ -10,6 +10,10 @@ output:
   html_notebook: default
 ---
 
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(eval = TRUE, message = FALSE, warning = FALSE)
+```
+
 ## Overview
 
 In this homework assignment, we will explore, analyze and model a data set containing approximately 2200 records. Each record represents a professional baseball team from the years 1871 to 2006 inclusive. Each record has the performance of the team for the given year, with all of the statistics adjusted to match the performance of a 162 game season.
@@ -21,7 +25,7 @@ The objective is to build a multiple linear regression model on the training dat
 ## 1. Data Exploration
 
 
-### Data Summery 
+### Data Summary 
 
 ```{r, echo=FALSE}
 #Import required libraries
@@ -35,6 +39,7 @@ library(GGally)
 library(corrplot)
 library(ggcorrplot)
 library(reshape2)
+library(graphics)
 ```
 
 
@@ -80,7 +85,8 @@ apply(Data1,2, median)
 ```
 
 
-### Missing Vlaues
+### Missing Values
+
 
 ```{r}
 #Search if there are any NA values
@@ -152,7 +158,8 @@ ggcorrplot(corr, hc.order = TRUE, type = "lower",
 
 
 
-# Data Preperation
+# Data Preparation
+
 In this section we will be looking at the different ways to prepare the data for modeling. We will show the different steps that we took and the reasoning why we did certain transformations, replacement and creation of columns.
 
 ```{r importing data set}
@@ -177,7 +184,8 @@ moneyball_subset = subset(moneyball_training_data, select=-c(TEAM_BATTING_HBP, T
 
 ## Replacing NA with Mean or Median
 
-In this section we will need to decide whether to fill the missing data using the mean or median. We will need to look at the distribution of each of the columns with missing data in order to decide if we will be using the median or mean to fill in the missing data
+In this section we will need to decide whether to fill the missing data using the mean or median. We will need to look at the distribution of each of the columns with missing data in order to decide if we will be using the median or mean to fill in the missing data.
+     
 
 ```{r}
 missing_data = subset(moneyball_subset, select = c(TEAM_FIELDING_DP, TEAM_BASERUN_SB, TEAM_BATTING_SO, TEAM_PITCHING_SO))
@@ -185,6 +193,7 @@ missing_data = melt(missing_data)
 
 ggplot(missing_data, aes(x = value)) + geom_histogram(binwidth = 10) + facet_wrap(~variable, scale='free')
 ```
+     
 Looking at the above graphs we can see that not all the distribution are uniform distribution. We can see that **TEAM_BATTING_SO** is a bimodal distribution, **TEAM_BASERUN_SB** is skewed to the right, and **TEAM_PITCHING_SO** has very large outliers. For this reason we will be using the median to replace all the missing data as the median is less susceptible to outliers and non-uniform distributions.
 
 ```{r}
@@ -200,8 +209,8 @@ moneyball_fill = as.data.frame(moneyball_fill)
 
 
 ## Transformation
-We will also be needing to check all of the columns to see if they will need any type of transformation in order to create a linear line. We will be be graphing all the columns with **TARGET_WINS** as the response variable. This will allow us to see if there are any columns that can be transformed in order to improve the model.
-
+We will also be needing to check all of the columns to see if they will need any type of transformation in order to create a linear line. We will be be graphing all the columns with **TARGET_WINS** as the response variable. This will allow us to see if there are any columns that can be transformed in order to improve the model.      
+       
 ```{r}
 par(mfrow=c(2,2))
 
@@ -218,6 +227,7 @@ for (i in 2:ncol(moneyball_fill)){
   )
 }
 ```
+     
 Looking at the graphs above we can see that none of the columns are real good candidates for transformation.
 
 
@@ -242,7 +252,7 @@ ggplot(moneyball_fill, aes(x=TEAM_BATTING_TOTAL, y=TARGET_WINS)) + geom_smooth(m
 ```
 
 ## Hit Percentage
-We would like to create a column which states what is the teams hit/base they get per game. This will be calculated by summing the total amount of hits a team gets and dividing 162 game season.
+We would like to create a column which states what is the teams hit/base they get per game. This will be calculated by summing the total amount of hits a team gets and dividing 162 game season.     
 
 ```{r}
 moneyball_fill$TEAM_BATTING_PERCENT =  moneyball_fill$TEAM_BATTING_TOTAL / 162
@@ -251,15 +261,17 @@ moneyball_fill$TEAM_BATTING_PERCENT =  moneyball_fill$TEAM_BATTING_TOTAL / 162
 ```{r}
 ggplot(moneyball_fill, aes(x=TEAM_BATTING_PERCENT, y=TARGET_WINS)) + geom_smooth(method='lm') + geom_point(aes(color=TEAM_TYPE))
 ```
+
 ## Model Building
 
-At the beginning, we were presented with 16 independent variables. It makes sense to exclude index since it is not relevant. It also makes sense to exclude team_batting_hbp and team_batting_cs since they are comprised of so many N/As. We are thus able to concentrate on the 13 remaining variables, pursuing continuous incremental model improvement.
+At the beginning, we were presented with 16 independent variables. It makes sense to exclude index since it is not relevant. It also makes sense to exclude `team_batting_hbp` and `team_baserun_cs` since they are comprised of so many N/As. We are thus able to concentrate on the 13 remaining variables, pursuing continuous incremental model improvement.
 
-Our models are outlined below:
-
-  lmodel1 - an "all-in" model that includes all 13 remaining variables
-  lmodel2 - a model that strips out outliers
+To start with, our first three models are outlined below.       
+       
+  lmodel1 - an "all-in" model that includes all 13 remaining variables     
+  lmodel2 - a model that strips out outliers      
   lmodel3 - a model that eliminates impertinent attributes
+
   
 ```{r}
 
@@ -275,13 +287,13 @@ We'll start with the all-in model
 lmodel1 <- lm(target_wins ~ ., data = train1)
 summary(lmodel1)
 ```
-So in looking at the all-in model, we can identify how the model behaves intuitively and not-so-intuitively. For example, we see the following variables as having positive coefficients: team_batting_h, team_batting_3b, team_baserun_sb, and team_pitching_strikeouts. These make sense, as you'd expect a team to win games that gets hits, hits triples, steals bases efficiently, and strikes out opponents. However, some of the positive coefficients don't make as much sense. For example, we would expect teams whose pitchers give up lots of home runs to not win very many games. This certainly warrants further analysis.
+So in looking at the all-in model, we can identify how the model behaves intuitively and not-so-intuitively. For example, we see the following variables as having positive coefficients: `team_batting_h`, `team_batting_3b`, `team_baserun_sb`, and `team_pitching_strikeouts`. These make sense, as you'd expect a team to win games that gets hits, hits triples, steals bases efficiently, and strikes out opponents. However, some of the positive coefficients don't make as much sense. For example, we would expect teams whose pitchers give up lots of home runs to not win very many games. This certainly warrants further analysis.
 
 For negative coefficients, we'd obviously expect teams whose players make a lot of errors to not win at a high rate. However, hitting doubles and fielding double plays have negative coefficients as well, which are not intuitive at all.
 
 A majority of the variables that we are assessing appear to contribute to predicting wins. We can gain some comfort in our model due to the low RSE (13.07) and satisfactory F-statistic (80.1), and we should feel ok about the overall efficacy of our model. However, the Adjusted R-square well under 1 is cause for some concern, but we can look to improve that in future iterations of the model. 
 
-What else can we do to improve our model? Well, its predictive value might be enhanced by eliminating some problematic outliers. So let's take a look at if it makes sense to do so.
+What else can we do to improve our model? Well, its predictive value might be enhanced by eliminating some problematic outliers. So let's take a look at if it makes sense to do so.      
 ```{r}
 res1 <- resid(lmodel1)
 plot(fitted(lmodel1), res1)
@@ -290,7 +302,7 @@ abline(0,0)
 
 qqnorm(res1, pch = 1, frame = FALSE)
 ```
-The data is not evenly scattered but we don't detect any unexpected non-linear patter. The normal QQ looks good as well with a relatively straight line. We can spot some outliers that we should drill down on using Cook's Distance. Then, we can then attempt to strip them out to improve our model somewhat.
+The data is not evenly scattered but we don't detect any unexpected non-linear patter. The normal QQ looks good as well with a relatively straight line. We can spot some outliers that we should drill down on using Cook's Distance. Then, we can then attempt to strip them out to improve our model somewhat.      
 
 ```{r}
 cooksd <- cooks.distance(lmodel1)
@@ -308,7 +320,7 @@ train1_strip <- train1[-influential, ]
 lmodel2 <- lm(target_wins ~ ., data = train1_strip)
 summary(lmodel2)
 ```
-This looks like good news. Our RSE is down, and our F-statistic is up. Even our Adjusted R-Squared value is up slightly from .31. Nevertheless, the explanatory value of our model remains limited without this last number increasing significantly. And we can clearly see some variables with high p-values that ought to be removed in order to improve our model. Let's proceed with removing team_batting_hr and team_picthing_hr.
+This looks like good news. Our RSE is down, and our F-statistic is up. Even our Adjusted R-Squared value is up slightly from .31. Nevertheless, the explanatory value of our model remains limited without this last number increasing significantly. And we can clearly see some variables with high p-values that ought to be removed in order to improve our model. Let's proceed with removing `team_batting_hr` and `team_picthing_hr`.
 
 ```{r}
 
@@ -317,5 +329,44 @@ lmodel3 <- lm(target_wins ~ ., data = train3)
 summary(lmodel3)
 ```
 
-We've improved the model incrementally by removing variables with high p-values, and our RSE and F-stat look better The explanatory power of our model, however, remains in doubt due to the Adjusted R-Squared value that remains low, even though it's improved from the previous model. What stands out here is that triples hit, bases stolen, and gaining walks remain the overall strongest positive coefficients, while team_fielding_dp remains the largest negative coefficient, which is counter-intuitive at first blush. However, one thing necessary for a double play is at least one opponent runner on base. Those teams that earn a high number of double plays are only able to do so because their pitchers are allowing runners on base to begin with. 
+We've improved the model incrementally by removing variables with high p-values, and our RSE and F-stat look better The explanatory power of our model, however, remains in doubt due to the Adjusted R-Squared value that remains low, even though it's improved from the previous model. What stands out here is that triples hit, bases stolen, and gaining walks remain the overall strongest positive coefficients, while `team_fielding_dp` remains the largest negative coefficient, which is counter-intuitive at first blush. However, one thing necessary for a double play is at least one opponent runner on base. Those teams that earn a high number of double plays are only able to do so because their pitchers are allowing runners on base to begin with. 
 
+
+In addition to the aforementioned three models, we will be analysing two additional models as follows:    
+
+    1: lmodel_random - a model put together by someone who does not understand the game of baseball; and
+    
+    2: lmodel4 - model containing three variables which we believe are more related to winning games: 'team_batting_total` + `team_pitching_h` + `team_batting_3b`
+       
+    
+
+We'll start with the random model. The subject matter *non-expert* does not understand batters, pitchers, walks, double plays, etc. What (s)he knows is that in every game, not losing is related to a low number of errors - so the variable 'team_fielding_e' is picked and also (s)he thinks that stolen is not good so the variable `team_baserun_sb` is also chosen .
+```{r}
+
+lmodel_random <- lm(target_wins ~ team_baserun_sb + team_fielding_e, data = train1)
+summary(lmodel_random)
+```    
+As expected, such a random model does not yield very good results, despite all coefficients being statistically different from zero. As we can see from the very low R-squared and high RSE. In terms of interpretation, number of stolen bases have a positive impact on winnings, contradicting what the *non-expert* thought and number of errors has a negative impact on winnings, which is intuitive, as expected by our *non-expert*. 
+
+In addition, analysing the residual plots we see that the residuals are not normally distributed and present heterocedasticity.
+
+```{r test}
+par(mfrow = c(2, 2))  # Split the plotting panel into a 2 x 2 grid
+plot(lmodel_random)  # Plot the model information
+```
+
+Moving on to our expert model, we will fit a model on two variables which we believe are more related to winning games: 'team_batting_total` + `team_pitching_h`.
+
+```{r}
+lmodel4<-lm(target_wins ~ team_batting_total + team_pitching_h, data = train1)
+summary(lmodel4)
+```
+Adjusted R-squared is better than our random model but still below that of model3. As for interpretation, batting total has a positive impact on wins while hits allowed have a negative impact, as expected.
+
+Residual plots are below, and residuals are definitive more well behaved than in the random model.
+
+
+```{r}
+par(mfrow = c(2, 2))  # Split the plotting panel into a 2 x 2 grid
+plot(lmodel4)  # Plot the model information
+```
