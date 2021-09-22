@@ -272,6 +272,15 @@ moneyball_fill$TEAM_TYPE = cut(moneyball_subset[,'TARGET_WINS'], breaks=c(0, 73,
 
 ## Creating Total Hits
 Creating a column which includes the total amount of hits a team has
+```{r}
+createTEAM_BATTING_TOTAL = function(x){
+  x$TEAM_BATTING_TOTAL = (x$TEAM_BATTING_H 
+                          + (2 * x$TEAM_BATTING_2B) 
+                          + (3 * x$TEAM_BATTING_3B) 
+                          + (4 * x$TEAM_BATTING_HR))
+  return(x)
+}
+```
 
 ```{r}
 moneyball_fill$TEAM_BATTING_TOTAL = (moneyball_fill$TEAM_BATTING_H + (2 * moneyball_fill$TEAM_BATTING_2B) + (3 * moneyball_fill$TEAM_BATTING_3B) + (4 * moneyball_fill$TEAM_BATTING_HR))
@@ -437,11 +446,21 @@ For now, we simply modify these outlier observations so those maxs and mins are 
 ```{r echo=FALSE, message=FALSE}
 eval_data <- read.csv('https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW1/moneyball-evaluation-data.csv', header=T)
 
-m1_prediction <- predict(lmodel3, eval_data)
-m1_prediction <- data.frame(m1_prediction)
-m1_prediction[m1_prediction$m1_prediction > max(train3$TARGET_WINS), ] <- max(train3$TARGET_WINS)
-m1_prediction[m1_prediction$m1_prediction < min(train3$TARGET_WINS), ] <- min(train3$TARGET_WINS)
-write.csv(m1_prediction, "testPredictions.csv")
+#create Team Batting total in the evaluation data
+eval_data = createTEAM_BATTING_TOTAL(eval_data)
+
+#Add percent column to match with the model
+eval_data$TEAM_BATTING_PERCENT =  eval_data$TEAM_BATTING_TOTAL / 162
+
+#convert header to lower case to match with the models
+names(eval_data) <- tolower(names(eval_data))
+
+predictiondf <- predict(lmodel3, eval_data)
+predictiondf <- data.frame(predictiondf)
+predictiondf[predictiondf$predictiondf > max(train3$TARGET_WINS), ] <- max(train3$TARGET_WINS)
+predictiondf[predictiondf$predictiondf < min(train3$TARGET_WINS), ] <- min(train3$TARGET_WINS)
+write.csv(predictiondf, "/Users/anjalibm.com/Documents/DataScience/DATA_621_Group1/HW1/testPredictions.csv")
 ```
 
+##Prediction explanation will be added by Zhouxin Shi(Joe)
 
