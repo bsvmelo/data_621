@@ -443,7 +443,7 @@ ggplot(imp_coef) +
 We had to modify our predictions a bit because our final model a) predicted wins > 260 for one observation and b) -783 wins for another.   This is clearly poor performance and it may be important to find better options for our model.   
 
 For now, we simply modify these outlier observations so those maxs and mins are replaced with the maxes and mins of our final training set.  
-```{r echo=FALSE, message=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 eval_data <- read.csv('https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW1/moneyball-evaluation-data.csv', header=T)
 
 #create Team Batting total in the evaluation data
@@ -457,8 +457,7 @@ names(eval_data) <- tolower(names(eval_data))
 
 predictiondf <- predict(lmodel3, eval_data)
 predictiondf <- data.frame(predictiondf)
-predictiondf[predictiondf$predictiondf > max(train3$TARGET_WINS), ] <- max(train3$TARGET_WINS)
-predictiondf[predictiondf$predictiondf < min(train3$TARGET_WINS), ] <- min(train3$TARGET_WINS)
+
 write.csv(predictiondf, "/Users/anjalibm.com/Documents/DataScience/DATA_621_Group1/HW1/testPredictions.csv")
 ```
 
