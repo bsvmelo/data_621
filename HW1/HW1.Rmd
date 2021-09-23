@@ -85,6 +85,7 @@ library(ggcorrplot)
 library(reshape2)
 library(graphics)
 library(ggResidpanel)
+library(gridExtra)
 ```
 
 
@@ -576,3 +577,24 @@ abline(0,0)
 ```
 
 Similar to the training data, the evaluation data also needs some prep work.The NA values imputed used the same method as what we done before. We successfully predicted the number of wins with our selected model3 which has a higher R2 and F-statistic. But the residuals are unevenly dispersed relative to the fitted values, indicating that the variance of the residuals is not constant. And the model lacks a higher order term for one variable to explain the curvature.
+
+
+### Compare predicted to original distribution
+
+```{r, echo=FALSE, message=FALSE}
+p1 <- ggplot(train3, aes(target_wins)) + geom_histogram() + ggtitle("Training Win Distribution") 
+p2 <- ggplot(predictiondf, aes(predictiondf)) + geom_histogram() + ggtitle("Predicted Win Distribution")
+grid.arrange(p1, p2, ncol=2)
+```
+
+The Training win distribution and predicted win distribution look similar.
+
+\pagebreak
+
+# Appendix
+
+* For full output code visit: https://github.com/ahussan/DATA_621_Group1/blob/main/HW1/HW1.Rmd
+* For predicted values over test set visit:  https://github.com/ahussan/DATA_621_Group1/blob/main/HW1/testPredictions.csv
+
+
+
