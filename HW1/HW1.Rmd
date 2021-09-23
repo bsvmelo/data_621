@@ -566,7 +566,7 @@ names(eval_data) <- tolower(names(eval_data))
 predictiondf <- predict(lmodel3, eval_data)
 predictiondf <- data.frame(predictiondf)
 
-write.csv(predictiondf, "/Users/anjalibm.com/Documents/DataScience/DATA_621_Group1/HW1/testPredictions.csv")
+write.csv(predictiondf, "./testPredictions.csv")
 ```
 
 ```{r}
