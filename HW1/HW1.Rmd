@@ -701,6 +701,9 @@ plot(fitted(lmodel3), res3)
 abline(0,0)
 
 ```
-The residuals are unevenly dispersed relative to the fitted values, indicating that the variance of the residuals is not constant. And the model lacks a higher order term for one variable to explain the curvature.
-
+Similar to the training data, the evaluation data also needs some prep work.The NA values imputed
+used the same method as what we done before. We successfully predicted the number of wins with our
+selected model3 which has a higher R2 and F-statistic. But the residuals are unevenly dispersed
+relative to the fitted values, indicating that the variance of the residuals is not constant. And the
+model lacks a higher order term for one variable to explain the curvature.
 
