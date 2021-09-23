@@ -1,13 +1,18 @@
 ---
 title: "DATA 621 Homework 1"
-subtitle: "Critical Thinking Group 1"
+author: "Critical Thinking Group 1"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
-  html_document: 
-    toc: true
-    toc_float: true
-  pdf_document: default
-  html_notebook: default
+  pdf_document:
+    toc: yes
+    toc_depth: 6
+  html_document:
+    toc: yes
+    toc_depth: '2'
+    smart: no
+  word_document:
+    toc: yes
+    toc_depth: '2'
 ---
 
 ```{r global_options, include=FALSE}
@@ -15,19 +20,57 @@ knitr::opts_chunk$set(eval = TRUE, message = FALSE, warning = FALSE)
 ```
 
 ## Overview
+\pagebreak
+\begin{center}
+\bigskip
+\bigskip
+\bigskip
+Prepared for:\\
+\medskip
+Prof. Dr. Nasrin Khansari\\
+\smallskip
+City University of New York, School of Professional Studies - Data 621\\
+\bigskip
+DATA 621 – Business Analytics and Data Mining\\
+\medskip
+Prepared by:\\
+\medskip
+Critical Thinking Group  1\\ 
+\medskip
+Vic Chan\\ 
+\smallskip
+Gehad Gad\\
+\smallskip
+Evan McLaughlin\\  
+\smallskip
+Bruno de Melo\\
+\smallskip
+Anjal Hussan\\
+\smallskip
+Zhouxin Shi\\
+\end{center}
+
+\pagebreak
+# Overview
 
 In this homework assignment, we will explore, analyze and model a data set containing approximately 2200 records. Each record represents a professional baseball team from the years 1871 to 2006 inclusive. Each record has the performance of the team for the given year, with all of the statistics adjusted to match the performance of a 162 game season.
 
-## Objective 
+# Objective 
 
 The objective is to build a multiple linear regression model on the training data to predict the number of wins for the team. we can only use the variables given to us (or variables that we derive from the variables provided). 
 
-## 1. Data Exploration
+#Data Exploration
 
 
 ### Data Summary 
 
-```{r, echo=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+##This block of code is to wrap codeblock in pdf/html output
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=80),tidy=TRUE)
+```
+
+```{r package, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 #Import required libraries
 library(tidyr)
 library(zoo)
@@ -43,9 +86,10 @@ library(graphics)
 ```
 
 
+
 ```{r}
 #Import the data
-Data <- read.csv("moneyball-training-data.csv")
+Data <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW1/moneyball-training-data.csv")
 head(Data)
 ```
 
@@ -163,7 +207,7 @@ ggcorrplot(corr, hc.order = TRUE, type = "lower",
 In this section we will be looking at the different ways to prepare the data for modeling. We will show the different steps that we took and the reasoning why we did certain transformations, replacement and creation of columns.
 
 ```{r importing data set}
-moneyball_training_data = read.csv("moneyball-training-data.csv")
+moneyball_training_data = read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW1/moneyball-training-data.csv")
 ```
 
 
@@ -242,6 +286,15 @@ moneyball_fill$TEAM_TYPE = cut(moneyball_subset[,'TARGET_WINS'], breaks=c(0, 73,
 
 ## Creating Total Hits
 Creating a column which includes the total amount of hits a team has
+```{r}
+createTEAM_BATTING_TOTAL = function(x){
+  x$TEAM_BATTING_TOTAL = (x$TEAM_BATTING_H 
+                          + (2 * x$TEAM_BATTING_2B) 
+                          + (3 * x$TEAM_BATTING_3B) 
+                          + (4 * x$TEAM_BATTING_HR))
+  return(x)
+}
+```
 
 ```{r}
 moneyball_fill$TEAM_BATTING_TOTAL = (moneyball_fill$TEAM_BATTING_H + (2 * moneyball_fill$TEAM_BATTING_2B) + (3 * moneyball_fill$TEAM_BATTING_3B) + (4 * moneyball_fill$TEAM_BATTING_HR))
@@ -370,3 +423,141 @@ Residual plots are below, and residuals are definitive more well behaved than in
 par(mfrow = c(2, 2))  # Split the plotting panel into a 2 x 2 grid
 plot(lmodel4)  # Plot the model information
 ```
+# Select Models
+In order to select on model we need to consider few aspects of the models:
+
+Degrees of Freedom: Number of observations minus the number of coefficients (including intercepts). The larger this number is the better and if it’s close to 0, your model is seriously over fit.
+
+### R-squared:
+R-squared evaluates the scatter of the data points around the fitted regression line. It is also called the coefficient of determination. For the same data set, higher R-squared values represent smaller differences between the observed data and the fitted values.
+
+R-squared is the percentage of the dependent variable variation that a linear model explains.
+
+R-squared is always between 0 and 100%:
+
+0% represents a model that does not explain any of the variation in the response variable around its mean. The mean of the dependent variable predicts the dependent variable as well as the regression model.
+100% represents a model that explains all the variation in the response variable around its mean.
+Usually, the larger the R2, the better the regression model fits your observations.
+
+### Adjusted R-squared:
+The adjusted R-squared is a modified version of R-squared that adjusts for predictors. when we compare Adj-R-Squared among the input variables, sa lower adjusted R-squared indicates that the additional input variables are not adding value to the model. A higher adjusted R-squared indicates that the changes in input variables are adding value to the model.s
+
+### Residuals:
+Residuals are estimates of experimental error obtained by subtracting the observed responses from the predicted responses. The predicted response is calculated from the chosen model. Since this is a form of error, the same general assumptions apply to the group of residuals that we typically use for errors in general: one expects them to be (roughly) normal and (approximately) independently distributed with a mean of 0 and some constant variance.in other words, we should not see any pattern in the residuals when plotting. A simple plot is suitable for displaying the normality of the distribution of a group of residuals
+
+### p-value:
+we need to evaluate p-value and if the p-value is much less than 0.05 then we can reject the null hypothesis. That will indicate that there is a significant relationship between the variables in the linear regression model of the data set faithful.
+
+## Model comparison
+Now, before we select our model, let's find out the statistics of our models so that we can compare the models using the statistics i.e. R2, MSE, F-statistic, Number of Variables (K), Number of Observations (N), and number of observations in the original training set that were excluded from the model. 
+
+```{r echo=FALSE, message=FALSE}
+results = NULL
+models = list(model1 = lmodel1, 
+              model2 = lmodel2,
+              model3 = lmodel3)
+
+for (i in names(models)){
+  s = summary(models[[i]])
+  name = i
+  mse = mean(s$residuals^2)
+  r2 = s$r.squared
+  pvalue = s$coefficients[[8]] 
+  adjustedR2 = s$adj.r.squared
+  f = s$fstatistic[1]
+  k = s$fstatistic[2]
+  n = s$fstatistic[3]
+  removedObservations = nrow(train1)-n
+  results = rbind(results, data.frame(name = name, 
+                                      rsquared = r2,
+                                      adjustedR2  = adjustedR2,
+                                      mse = mse,
+                                      f = f,
+                                      pvalue = pvalue,
+                                      k = k,
+                                      n = n
+                                      )
+                  )
+}
+
+rownames(results) = NULL
+knitr::kable(results)
+```
+
+From the table above, the r-Squared of Model2 and Model3 are almost similar. The adjusted R2 is little higher in the model 3. In addition the p-value is significant in all three models but the Model3 has lowest p-value. 
+Based on the statistics and diagnostics, we can select Model3 for our final model.
+
+## Final Model Review
+
+Let's take a look to some other aspects of our final model.
+
+Our final model is Model3(lmodel3): 
+
+And the dependents columns are:
+```{r}
+print(names(train3))
+```
+
+Let's review the diagnostic plots and a plot of the residuals.  
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+plot(lmodel3)
+```
+
+### Plot the residual of selected model
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+plot(lmodel3$residuals)
+```
+From this plot, we can conclude that there is no obvious pattern in this plot.
+
+### Create histogram of the residuals of selected model
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = train3, aes(x = lmodel3$residuals)) +
+    geom_histogram(fill = 'steelblue', color = 'black') +
+    labs(title = 'Histogram of Residuals', x = 'Residuals', y = 'Frequency')
+```
+
+From this histogram we can visualize that the distribution is pretty normal. 
+
+### Plot the top Coefficients of our model
+
+```{r, echo=FALSE, message=FALSE}
+coef <- data.frame(sort(lmodel3$coefficients))
+coef$names <- rownames(coef)
+names(coef) <- c("coef","names")
+imp_coef <- rbind(head(coef,10),
+                  tail(coef,10))
+imp_coef$coef <- scale(imp_coef$coef)
+ggplot(imp_coef) +
+    geom_bar(aes(x=reorder(names,coef),y=coef),
+             stat="identity") +
+    coord_flip() +
+    ggtitle("Most Important 20 Coefficents \n in our Final Model (Scaled)") +
+    theme(axis.title=element_blank(), plot.title=element_text(hjust=0.5))
+```
+
+# Predictions using evaluation data
+
+Let's use our evaluation data to predict and evaluate our selected model.
+ 
+```{r predict, echo=FALSE, message=FALSE, warning=FALSE}
+eval_data <- read.csv('https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW1/moneyball-evaluation-data.csv', header=T)
+
+#create Team Batting total in the evaluation data
+eval_data = createTEAM_BATTING_TOTAL(eval_data)
+
+#Add percent column to match with the model
+eval_data$TEAM_BATTING_PERCENT =  eval_data$TEAM_BATTING_TOTAL / 162
+
+#convert header to lower case to match with the models
+names(eval_data) <- tolower(names(eval_data))
+
+predictiondf <- predict(lmodel3, eval_data)
+predictiondf <- data.frame(predictiondf)
+
+write.csv(predictiondf, "/Users/anjalibm.com/Documents/DataScience/DATA_621_Group1/HW1/testPredictions.csv")
+```
+
+## Prediction explanation will be added by Zhouxin Shi(Joe)
+
