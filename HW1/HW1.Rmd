@@ -14,6 +14,7 @@ output:
     toc: yes
     toc_depth: '2'
 ---
+<<<<<<<<< Temporary merge branch 1
 \pagebreak
 \begin{center}
 \bigskip
@@ -45,14 +46,15 @@ Zhouxin Shi\\
 \end{center}
 
 \pagebreak
-
+# Overview
+=========
 
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(eval = TRUE, message = FALSE, warning = FALSE)
 ```
 
 ## Overview
-
+>>>>>>>>> Temporary merge branch 2
 
 In this homework assignment, we will explore, analyze and model a data set containing approximately 2200 records. Each record represents a professional baseball team from the years 1871 to 2006 inclusive. Each record has the performance of the team for the given year, with all of the statistics adjusted to match the performance of a 162 game season.
 
@@ -60,10 +62,10 @@ In this homework assignment, we will explore, analyze and model a data set conta
 
 The objective is to build a multiple linear regression model on the training data to predict the number of wins for the team. we can only use the variables given to us (or variables that we derive from the variables provided). 
 
-# Data Exploration
+#Data Exploration
 
 
-## Data Summary 
+### Data Summary 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 ##This block of code is to wrap codeblock in pdf/html output
@@ -84,7 +86,6 @@ library(corrplot)
 library(ggcorrplot)
 library(reshape2)
 library(graphics)
-library(ggResidpanel)
 ```
 
 
@@ -131,7 +132,7 @@ apply(Data1,2, median)
 ```
 
 
-## Missing Values
+### Missing Values
 
 
 ```{r}
@@ -150,7 +151,7 @@ sum(is.na(Data2))
 ```
 
 
-## Distribution
+### Distribution
 ```{r}
 Data2 %>%
   gather(var, value, TARGET_WINS:TEAM_FIELDING_DP) %>%
@@ -165,7 +166,7 @@ The distribution of the target variable "target_wins" column is normally distrib
 
 The distribution also show that BASERUN_SB and BATTING 3B are right skew variables. In addition, BATTING_HR and PITCHING_HR are bimodal.
 
-## Boxplot
+### Boxplot
 ```{r}
 Data2 %>%
   gather(var, value, TARGET_WINS:TEAM_FIELDING_DP) %>%
@@ -176,7 +177,7 @@ Data2 %>%
 
 The box-plots above give us idea about the spread of each variable in the data. The box-plots reveal significant outliers.
 
-## Correlation
+### Correlation
 
 ```{r}
 # Use pearson correlation
@@ -317,7 +318,7 @@ moneyball_fill$TEAM_BATTING_PERCENT =  moneyball_fill$TEAM_BATTING_TOTAL / 162
 ggplot(moneyball_fill, aes(x=TEAM_BATTING_PERCENT, y=TARGET_WINS)) + geom_smooth(method='lm') + geom_point(aes(color=TEAM_TYPE))
 ```
 
-# Model Building
+## Model Building
 
 At the beginning, we were presented with 16 independent variables. It makes sense to exclude index since it is not relevant. It also makes sense to exclude `team_batting_hbp` and `team_baserun_cs` since they are comprised of so many N/As. We are thus able to concentrate on the 13 remaining variables, pursuing continuous incremental model improvement.
 
@@ -357,7 +358,7 @@ abline(0,0)
 
 qqnorm(res1, pch = 1, frame = FALSE)
 ```
-The data is not evenly scattered but we don't detect any unexpected non-linear pattern. The normal QQ looks good as well with a relatively straight line. We can spot some outliers that we should drill down on using Cook's Distance. Then, we can then attempt to strip them out to improve our model somewhat.      
+The data is not evenly scattered but we don't detect any unexpected non-linear patter. The normal QQ looks good as well with a relatively straight line. We can spot some outliers that we should drill down on using Cook's Distance. Then, we can then attempt to strip them out to improve our model somewhat.      
 
 ```{r}
 cooksd <- cooks.distance(lmodel1)
@@ -387,57 +388,51 @@ summary(lmodel3)
 We've improved the model incrementally by removing variables with high p-values, and our RSE and F-stat look better The explanatory power of our model, however, remains in doubt due to the Adjusted R-Squared value that remains low, even though it's improved from the previous model. What stands out here is that triples hit, bases stolen, and gaining walks remain the overall strongest positive coefficients, while `team_fielding_dp` remains the largest negative coefficient, which is counter-intuitive at first blush. However, one thing necessary for a double play is at least one opponent runner on base. Those teams that earn a high number of double plays are only able to do so because their pitchers are allowing runners on base to begin with. 
 
 
-In addition to the aforementioned three models, we will be analysing two additional models as follows:   
+In addition to the aforementioned three models, we will be analysing two additional models as follows:    
+
+    1: lmodel_random - a model put together by someone who does not understand the game of baseball; and
     
-    1: lmodel4 - model containing three variables which we believe are more related to winning games:
-    'team_batting_total` + `team_pitching_h` + `team_batting_3b`
-
-    2: lmodel5 - a model put together by someone who does not understand the game of baseball;
+    2: lmodel4 - model containing three variables which we believe are more related to winning games: 'team_batting_total` + `team_pitching_h` + `team_batting_3b`
        
-We will fit a model on two variables which we believe are more related to winning games:
-'team_batting_total` + `team_pitching_h`.
+    
 
-```{r}
-lmodel4<-lm(target_wins ~ team_batting_total + team_pitching_h, data = train1)
-summary(lmodel4)
-```
-Adjusted R-squared is lower then what we have in model3. As for interpretation, batting total has a positive impact on wins while hits allowed have a negative impact, as expected.
-
-Residual plots are below:
-
-
-```{r}
-par(mfrow = c(2, 2))  # Split the plotting panel into a 2 x 2 grid
-plot(lmodel4)  # Plot the model information
-```
-
-Now we will do a random model. The subject matter *non-expert* does not understand batters, pitchers, walks, double plays, etc. What (s)he knows is that in every game, not losing is related to a low number of errors - so the variable 'team_fielding_e' is picked and also (s)he thinks that stolen is not good so the variable `team_baserun_sb` is also chosen .
+We'll start with the random model. The subject matter *non-expert* does not understand batters, pitchers, walks, double plays, etc. What (s)he knows is that in every game, not losing is related to a low number of errors - so the variable 'team_fielding_e' is picked and also (s)he thinks that stolen is not good so the variable `team_baserun_sb` is also chosen .
 ```{r}
 
-lmodel5 <- lm(target_wins ~ team_baserun_sb + team_fielding_e, data = train1)
-summary(lmodel5)
-```
-As expected, such a random model does not yield very good results, despite all coefficients being statistically different from zero. As we can see from the very low R-squared and high RSE. In terms of interpretation, number of stolen bases have a positive impact on winnings, contradicting what the *non-expert* thought and number of errors has a negative impact on winnings, which is intuitive, as expected by our *non-expert*.
-
-In addition, analyzing the residual plots we see that the residuals are not normally distributed and present heterocedasticity.
-
-```{r test}
-par(mfrow = c(2, 2))  # Split the plotting panel into a 2 x 2 grid
-plot(lmodel5)  # Plot the model information
-```
-
+<<<<<<<<< Temporary merge branch 1
 # Select Models
+In order to select on model we need to consider few aspects of the models:
+
+Degrees of Freedom: Number of observations minus the number of coefficients (including intercepts). The larger this number is the better and if it’s close to 0, your model is seriously over fit.
+
+### R-squared:
+R-squared evaluates the scatter of the data points around the fitted regression line. It is also called the coefficient of determination. For the same data set, higher R-squared values represent smaller differences between the observed data and the fitted values.
+
+R-squared is the percentage of the dependent variable variation that a linear model explains.
+
+R-squared is always between 0 and 100%:
+
+0% represents a model that does not explain any of the variation in the response variable around its mean. The mean of the dependent variable predicts the dependent variable as well as the regression model.
+100% represents a model that explains all the variation in the response variable around its mean.
+Usually, the larger the R2, the better the regression model fits your observations.
+
+### Adjusted R-squared:
+The adjusted R-squared is a modified version of R-squared that adjusts for predictors. when we compare Adj-R-Squared among the input variables, sa lower adjusted R-squared indicates that the additional input variables are not adding value to the model. A higher adjusted R-squared indicates that the changes in input variables are adding value to the model.s
+
+### Residuals:
+Residuals are estimates of experimental error obtained by subtracting the observed responses from the predicted responses. The predicted response is calculated from the chosen model. Since this is a form of error, the same general assumptions apply to the group of residuals that we typically use for errors in general: one expects them to be (roughly) normal and (approximately) independently distributed with a mean of 0 and some constant variance.in other words, we should not see any pattern in the residuals when plotting. A simple plot is suitable for displaying the normality of the distribution of a group of residuals
+
+### p-value:
+we need to evaluate p-value and if the p-value is much less than 0.05 then we can reject the null hypothesis. That will indicate that there is a significant relationship between the variables in the linear regression model of the data set faithful.
 
 ## Model comparison
-Now, before we select our model, let's find out the statistics of our models so that we can compare the models using the indicators i.e. R2, MSE, F-statistic(f), Number of Variables (k), Number of Observations (n)
+Now, before we select our model, let's find out the statistics of our models so that we can compare the models using the statistics i.e. R2, MSE, F-statistic, Number of Variables (K), Number of Observations (N), and number of observations in the original training set that were excluded from the model. 
 
 ```{r echo=FALSE, message=FALSE}
 results = NULL
 models = list(model1 = lmodel1, 
               model2 = lmodel2,
-              model3 = lmodel3,
-              model4 = lmodel4,
-              model5 = lmodel5)
+              model3 = lmodel3)
 
 for (i in names(models)){
   s = summary(models[[i]])
@@ -466,45 +461,17 @@ rownames(results) = NULL
 knitr::kable(results)
 ```
 
-
-In order to select on model we need to consider few aspects of the models:
-
-## R-squared:
-R-squared evaluates the scatter of the data points around the fitted regression line. It is also called the coefficient of determination. For the same data set, higher R-squared values represent smaller differences between the observed data and the fitted values.
-
-R-squared is the percentage of the dependent variable variation that a linear model explains.
-
-R-squared is always between 0 and 100%. 0% represents a model that does not explain any of the variation in the response variable around its mean. The mean of the dependent variable predicts the dependent variable as well as the regression model.
-100% represents a model that explains all the variation in the response variable around its mean.
-Usually, the larger the R2, the better the regression model fits your observations.
-
-Among the models, the r-Squared of Model2 and Model3 are almost similar and has highest R2. Based on R2, we can select model2 and model3 as our best model candidate.
-
-## Adjusted R-squared:
-The adjusted R-squared is a modified version of R-squared that adjusts for predictors. when we compare Adj-R-Squared among the input variables, the lower adjusted R-squared indicates that the additional input variables are not adding value to the model. A higher adjusted R-squared indicates that the changes in input variables are adding value to the model.
-Among the models, model3 has the highest adjusted R2 which indicates that model3 could be the best model. The model4 and model5 have the lowest adjusted R2 compare to the first three models.
-
-## Residuals:
-Residuals are estimates of experimental error obtained by subtracting the observed responses from the predicted responses. The predicted response is calculated from the chosen model. Since this is a form of error, the same general assumptions apply to the group of residuals that we typically use for errors in general: one expects them to be (roughly) normal and (approximately) independently distributed with a mean of 0 and some constant variance.in other words, we should not see any pattern in the residuals when plotting. A simple plot is suitable for displaying the normality of the distribution of a group of residuals
-
-Using ggResidpanel package, we can quickly visualize residuals from all models. In this visuals, the first plot is for model1, second plot is for model2 and so on.
-
-```{r residualCompare}
-resid_compare(models, plots = c("resid", "hist"))
-```
-
-From the plots and histogram, it looks like the residuals from model2 and model3 have no obvious pattern. residuals from model4 and model 5 are left skewed.Hence we can select model2 and model3 as the candidate for the best model
-
-## p-value:
-we need to evaluate p-value and if the p-value is much less than 0.05 then we can reject the null hypothesis. That will indicate that there is a significant relationship between the variables in the linear regression model of the data set. Based on the p-value shown in the table, we can pick model1, model2, and model3 as best model candidate. p-value of the model4 and model5 are not significant. Hence we can not select model4 and model5 as our best model
-
-Although model2 and model3 are the best candidates. Both models have highest R2 and increasing Adjusted R2. p-value for both of the models are significant. But we are going to select model3 as our final model based on the statistics and diagnostics especially adjusted R2 which is slightly higher and the p-value which is low in comparison with model2
+From the table above, the r-Squared of Model2 and Model3 are almost similar. The adjusted R2 is little higher in the model 3. In addition the p-value is significant in all three models but the Model3 has lowest p-value. 
+Based on the statistics and diagnostics, we can select Model3 for our final model.
 
 ## Final Model Review
-Now that we have selected model3 as our best model, let's take a look to some other aspects of our final model.
 
-The dependents columns of our selected model are:
-```{r echo=FALSE}
+Let's take a look to some other aspects of our final model.
+
+Our final model is Model3(lmodel3): 
+
+And the dependents columns are:
+```{r}
 print(names(train3))
 ```
 
@@ -514,23 +481,23 @@ Let's review the diagnostic plots and a plot of the residuals.
 plot(lmodel3)
 ```
 
-## Plot the residual of selected model
+### Plot the residual of selected model
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 plot(lmodel3$residuals)
 ```
-The residual plot looks perfect and there is no obvious pattern noticed in this plot
+From this plot, we can conclude that there is no obvious pattern in this plot.
 
-## Create histogram of the residuals of selected model
+### Create histogram of the residuals of selected model
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 ggplot(data = train3, aes(x = lmodel3$residuals)) +
     geom_histogram(fill = 'steelblue', color = 'black') +
     labs(title = 'Histogram of Residuals', x = 'Residuals', y = 'Frequency')
 ```
 
-From this histogram we can visualize that the distribution is normal. 
+From this histogram we can visualize that the distribution is pretty normal. 
 
-## Plot the top Coefficients of our model
+### Plot the top Coefficients of our model
 
 ```{r, echo=FALSE, message=FALSE}
 coef <- data.frame(sort(lmodel3$coefficients))
@@ -571,3 +538,32 @@ write.csv(predictiondf, "/Users/anjalibm.com/Documents/DataScience/DATA_621_Grou
 
 ## Prediction explanation will be added by Zhouxin Shi(Joe)
 
+=========
+lmodel_random <- lm(target_wins ~ team_baserun_sb + team_fielding_e, data = train1)
+summary(lmodel_random)
+```    
+As expected, such a random model does not yield very good results, despite all coefficients being statistically different from zero. As we can see from the very low R-squared and high RSE. In terms of interpretation, number of stolen bases have a positive impact on winnings, contradicting what the *non-expert* thought and number of errors has a negative impact on winnings, which is intuitive, as expected by our *non-expert*. 
+
+In addition, analysing the residual plots we see that the residuals are not normally distributed and present heterocedasticity.
+
+```{r test}
+par(mfrow = c(2, 2))  # Split the plotting panel into a 2 x 2 grid
+plot(lmodel_random)  # Plot the model information
+```
+
+Moving on to our expert model, we will fit a model on two variables which we believe are more related to winning games: 'team_batting_total` + `team_pitching_h`.
+
+```{r}
+lmodel4<-lm(target_wins ~ team_batting_total + team_pitching_h, data = train1)
+summary(lmodel4)
+```
+Adjusted R-squared is better than our random model but still below that of model3. As for interpretation, batting total has a positive impact on wins while hits allowed have a negative impact, as expected.
+
+Residual plots are below, and residuals are definitive more well behaved than in the random model.
+
+
+```{r}
+par(mfrow = c(2, 2))  # Split the plotting panel into a 2 x 2 grid
+plot(lmodel4)  # Plot the model information
+```
+>>>>>>>>> Temporary merge branch 2
