@@ -48,7 +48,7 @@ Zhouxin Shi\\
 
 
 ```{r global_options, include=FALSE}
-knitr::opts_chunk$set(eval = TRUE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(eval = TRUE, message = FALSE, warning = FALSE, echo=FALSE)
 ```
 
 ## Overview
@@ -90,62 +90,52 @@ library(gridExtra)
 
 
 
-```{r}
+```{r results='hide', message=FALSE}
 #Import the data
 Data <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW1/moneyball-training-data.csv")
-head(Data)
 ```
 
-We can see that the data contain 17 columns and 2276 observations or records. The first column is the index which will be deleted as it is not useful. The target variable is the "TARGET_WINS". Notice that the dateset is numerical and does not have any categorical variables.
+The dataset contain 17 columns and 2276 observations or records. The first column is the index which will be deleted as it has no use in the analysis. The target variable is the **TARGET_WINS** column. The dataset is all numerical and does include any categorical variables.
 
-```{r}
+```{r results='hide', message=FALSE}
 #Remove the index
 Data1 <- Data [-c(1)]
 ```
 
 
-```{r}
+```{r results='hide', message=FALSE}
 #Check the Summary
 summary(Data1)
 ```
 
-Summary of the data gives a useful information about each variable. 
+At a glance we can see that the data a significant number of NA values and the average wins for a team is about 81.
 
-- There is a significant number of NA  values. 
-
-- The average wins for a team is about 81.
-
-
-````{r}
+````{r results='hide', message=FALSE, echo=FALSE}
 #The mean for each column in the data
 colMeans(Data1)
 ```
 
-```{r}
+```{r results='hide', message=FALSE, echo=FALSE}
 #The Standard Deviation for each column in the data
 sapply(Data1, sd)
 ```
 
-```{r}
+```{r results='hide', message=FALSE, echo=FALSE}
 #The median for each column in the data
 apply(Data1,2, median)
 ```
 
-
-## Missing Values
-
-
-```{r}
+```{r results='hide', message=FALSE, echo=FALSE}
 #Search if there are any NA values
 sum(is.na(Data1))
 ```
 
-```{r}
+```{r results='hide', message=FALSE, echo=FALSE}
 #We are not able to delete the NA values. We will replace NA values.
 Data2 = replace(Data1, TRUE, lapply(Data1, na.aggregate))
 ```
 
-```{r}
+```{r results='hide', message=FALSE, echo=FALSE}
 #Confirm the all NA values were replaced by the mean.
 sum(is.na(Data2))
 ```
@@ -158,13 +148,12 @@ Data2 %>%
   ggplot(., aes(value)) + 
   geom_density(color = "blue") + 
   facet_wrap(~var, scales= "free", ncol = 5)
-         
 ```
 
 
-The distribution of the target variable "target_wins" column is normally distributed and there are many average teams.
+The distribution of the target variable **TARGET_WINS** is normally distributed.
 
-The distribution also show that BASERUN_SB and BATTING 3B are right skew variables. In addition, BATTING_HR and PITCHING_HR are bimodal.
+The distribution also show that **BASERUN_SB** and **BATTING_3B** are right skewed, and additional **BATTING_HR** and **PITCHING_HR** are bimodal distributions.
 
 ## Boxplot
 ```{r}
@@ -175,20 +164,14 @@ Data2 %>%
   facet_wrap(~var, scales= "free", ncol = 4)
 ```
 
-The box-plots above give us idea about the spread of each variable in the data. The box-plots reveal significant outliers.
+The box-plots above give us idea about the spread of each variable in the data which reveal significant outliers in a lot of the columns.
 
 ## Correlation
 
-```{r}
+```{r echo=FALSE}
 # Use pearson correlation
 Data2 %>% correlate() %>% focus(TARGET_WINS)
-
 ```
-
-These correlations do not show a strong relationship. This indicate presence of ‘noise’ in these relationships.
-It is interesting to note allowing hits have little positive impacts on wins. 
-It is also noteworthy that pitching strikeouts by batters and hits allowed are negatively correlated with winning. I assume the correlations are affected by the outliers.
-
 
 ```{r}
 ggcorr(Data2)
@@ -201,19 +184,20 @@ ggcorrplot(corr, hc.order = TRUE, type = "lower",
    lab = TRUE)
 ```
 
-
-
+These correlations plots do not show a strong relationship between any two variables. This indicate presence of ‘noise’ in these relationships. It is interesting to note that allowing hits have little positive impacts on wins. 
+It is also noteworthy that pitching strikeouts by batters and hits allowed are negatively correlated with winning. I assume the correlations are affected by the outliers.
 
 
 # Data Preparation
 
-In this section we will be looking at the different ways to prepare the data for modeling. We will show the different steps that we took and the reasoning why we did certain transformations, replacement and creation of columns.
+In this section we will be looking at the different ways to prepare the data for modeling. We will show the different steps that we took and the reasoning on why we did certain transformations, replacement and creation of columns.
 
 ```{r importing data set}
 moneyball_training_data = read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW1/moneyball-training-data.csv")
 ```
 
 
+## Finding All NA
 ```{r finding all NA}
 na_count = sapply(moneyball_training_data, function(y) sum(is.na(y)))
 na_count = data.frame(na_count)
@@ -222,7 +206,7 @@ na_count %>%
   mutate(total_rows = nrow(moneyball_training_data)) %>%
   mutate(percent_missing = na_count / total_rows)
 ```
-Initially when looking at the data we can see that **TEAM_BATTING_HBP** is missing 91% of its data and **TEAM_BASERUN_CS** is missing around 34% of its data. This is a lot of data missing which is why those columns will be removing these. Based on online reading there is no definite cut of for how much data one should be missing before removing a column, but it is always better to have more data. The columns **TEAM_FIELDING_DP**, **TEAM_BASERUN_SB**, **TEAM_BATTING_SO**, and **TEAM_PITCHING_SO** are missing around 12% - 4% of its data and can fill those in with using mean and median. In the next section we will look at to see whether using the mean or median would be the better choice in filling the missing data.
+Initially when looking at the data we can see that **TEAM_BATTING_HBP** is missing 91% of its data and **TEAM_BASERUN_CS** is missing around 34% of its data. This is a lot of data missing which is why those columns will be removing these. Based on different studies there is no definite percentage of for how much data one should be missing before removing the column, but it is always better to have more data. The columns **TEAM_FIELDING_DP**, **TEAM_BASERUN_SB**, **TEAM_BATTING_SO**, and **TEAM_PITCHING_SO** are missing around 12% - 4% of its data and can fill those in with using mean and median. In the next section we will look at to see whether using the mean or median would be the better choice in filling the missing data.
 
 ```{r removing column}
 moneyball_subset = subset(moneyball_training_data, select=-c(TEAM_BATTING_HBP, TEAM_BASERUN_CS, INDEX))
@@ -259,7 +243,7 @@ moneyball_fill = as.data.frame(moneyball_fill)
 We will also be needing to check all of the columns to see if they will need any type of transformation in order to create a linear line. We will be be graphing all the columns with **TARGET_WINS** as the response variable. This will allow us to see if there are any columns that can be transformed in order to improve the model.      
        
 ```{r}
-par(mfrow=c(2,2))
+par(mfrow=c(2, 3))
 
 
 for (i in 2:ncol(moneyball_fill)){
@@ -280,7 +264,7 @@ Looking at the graphs above we can see that none of the columns are real good ca
 
 ## Putting Teams Into Buckets
 
-We will be putting the dataset into buckets based on the teams winning score as this will allow us to see if there is any patterns between weak and strong teams. The teams will be split into two groups **Strong** and **Weak** based on the **TARGET_WINS** column. 
+We will be putting the dataset into buckets based on the teams winning score as this will allow us to see if there is any patterns between weak and strong teams. The teams will be split into two groups **Strong** and **Weak** based on the **TARGET_WINS** column. The maximum **TARGET_WINS** is 146 and the minimum **TARGET_WINS** is 0 therefore the split is 73.
 
 ```{r}
 moneyball_fill$TEAM_TYPE = cut(moneyball_subset[,'TARGET_WINS'], breaks=c(0, 73, 146), include.lowest = TRUE, labels = c('Weak', 'Strong'))
@@ -288,7 +272,8 @@ moneyball_fill$TEAM_TYPE = cut(moneyball_subset[,'TARGET_WINS'], breaks=c(0, 73,
 
 
 ## Creating Total Hits
-Creating a column which includes the total amount of hits a team has
+
+We needed to create a column which include all the different batting statistics. By combining **TEAM_BATTING_H**, **TEAM_BATTING_2B**, **TEAM_BATTING_3B** AND **TEAM_BATTING_HR** we are able to measure the total amount bases each team scored. The reason why we needed this column is because there can be teams that score more home runs than single bases. Combining this information all into one column will make it easier to build a model as we will not need to put as many variables.
 ```{r}
 createTEAM_BATTING_TOTAL = function(x){
   x$TEAM_BATTING_TOTAL = (x$TEAM_BATTING_H 
@@ -307,8 +292,8 @@ moneyball_fill$TEAM_BATTING_TOTAL = (moneyball_fill$TEAM_BATTING_H + (2 * moneyb
 ggplot(moneyball_fill, aes(x=TEAM_BATTING_TOTAL, y=TARGET_WINS)) + geom_smooth(method='lm') + geom_point(aes(color=TEAM_TYPE))
 ```
 
-## Hit Percentage
-We would like to create a column which states what is the teams hit/base they get per game. This will be calculated by summing the total amount of hits a team gets and dividing 162 game season.     
+## Base Percentage
+We would like to create a column which measures the total amount of bases a team get per game. This will be calculated by using the new created column **TEAM_BATTING_TOTAL** dividing 162 game season.    
 
 ```{r}
 moneyball_fill$TEAM_BATTING_PERCENT =  moneyball_fill$TEAM_BATTING_TOTAL / 162
@@ -320,7 +305,7 @@ ggplot(moneyball_fill, aes(x=TEAM_BATTING_PERCENT, y=TARGET_WINS)) + geom_smooth
 
 # Model Building
 
-At the beginning, we were presented with 16 independent variables. It makes sense to exclude index since it is not relevant. It also makes sense to exclude `team_batting_hbp` and `team_baserun_cs` since they are comprised of so many N/As. We are thus able to concentrate on the 13 remaining variables, pursuing continuous incremental model improvement.
+At the beginning, we were presented with 16 independent variables. It makes sense to exclude index since it is not relevant. It also makes sense to exclude **TEAM_BATTING_HBP** and **TEAM_BASERUN_CS** since they are comprised of so many N/As. We are thus able to concentrate on the 13 remaining variables, pursuing continuous incremental model improvement.
 
 To start with, our first three models are outlined below.       
        
@@ -329,8 +314,7 @@ To start with, our first three models are outlined below.
   lmodel3 - a model that eliminates impertinent attributes
 
   
-```{r}
-
+```{r echo=FALSE, results='hide'}
 names(moneyball_fill) <- tolower(names(moneyball_fill))
 #let's strip out the team type since it doesn't enhance the model
 train1 <- subset(moneyball_fill, select = -c(team_type))
@@ -343,7 +327,7 @@ We'll start with the all-in model
 lmodel1 <- lm(target_wins ~ ., data = train1)
 summary(lmodel1)
 ```
-So in looking at the all-in model, we can identify how the model behaves intuitively and not-so-intuitively. For example, we see the following variables as having positive coefficients: `team_batting_h`, `team_batting_3b`, `team_baserun_sb`, and `team_pitching_strikeouts`. These make sense, as you'd expect a team to win games that gets hits, hits triples, steals bases efficiently, and strikes out opponents. However, some of the positive coefficients don't make as much sense. For example, we would expect teams whose pitchers give up lots of home runs to not win very many games. This certainly warrants further analysis.
+So in looking at the all-in model, we can identify how the model behaves intuitively and not-so-intuitively. For example, we see the following variables as having positive coefficients: **TEAM_BATTING_H**, **TEAM_BATTING_3B**, **TEAM_BASERUN_SB**, and **BEAM_PITCH_STRIKEOUT**. These make sense, as you'd expect a team to win games that gets hits, hits triples, steals bases efficiently, and strikes out opponents. However, some of the positive coefficients don't make as much sense. For example, we would expect teams whose pitchers give up lots of home runs to not win very many games. This certainly warrants further analysis.
 
 For negative coefficients, we'd obviously expect teams whose players make a lot of errors to not win at a high rate. However, hitting doubles and fielding double plays have negative coefficients as well, which are not intuitive at all.
 
