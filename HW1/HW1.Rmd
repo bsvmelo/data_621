@@ -175,8 +175,10 @@ Data2 %>% correlate() %>% focus(TARGET_WINS)
 
 ```{r}
 ggcorr(Data2)
+
 ```
 
+\pagebreak
 ```{r}
 #Add correlation coefficients
 corr <- round(cor(Data2), 1)
