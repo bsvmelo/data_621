@@ -1,0 +1,108 @@
+---
+title: "HW2"
+author: "Critical Thinking Group 1"
+date: "9/27/2021"
+  pdf_document:
+    toc: true
+    number_sections: true
+urlcolor: cyan
+linkcolor: red
+---
+
+```{R}
+library(dplyr)
+library(tidyr)
+```
+
+```{r load data}
+
+cm <- read.csv("C:/Users/wongs34/Documents/School/DATA 621/Homework/2/classification-output-data.csv", header=TRUE, sep=",")
+
+```
+
+From the confusion matrix table below, we've actual class value versus predicted class value. There are 119 true negative, 27 true positive, 30 false negative, and 5 false positive.
+
+```{r confusion matrix}
+
+conf_mtx <- cm %>% dplyr::select(class, scored.class) %>% table()
+conf_mtx
+
+```
+
+```{r accuracy}
+
+accuracy <- function(x){
+  
+  numerator <- x[2,2] + x[1,1]
+  denominator <- sum(x)
+  return(numerator/denominator)
+}
+
+```
+
+
+```{r classification error rate}
+
+error_rate <- function(x){
+  
+  numerator <- x[1,2] + x[2,1]
+  denominator <- sum(x)
+  return(numerator/denominator)
+}
+
+```
+
+
+```{r verification of accuracy and error sums to one}
+
+accuracy(conf_mtx) + error_rate(conf_mtx)
+
+```
+
+
+```{r precision}
+
+precision <- function(x){
+  
+  numerator <- x[1,1]
+  denominator <- x[1,1] + x[1,2]
+  return(numerator/denominator)
+}
+
+```
+
+
+```{r sensitivity}
+
+sensitivity <- function(x){
+  
+  numerator <- x[1,1]
+  denominator <- x[1,1] + x[2,1]
+  return(numerator/denominator)
+}
+
+```
+
+
+```{r specificity}
+
+specificity <- function(x){
+  
+  numerator <- x[2,2]
+  denominator <- x[2,2] + x[1,2]
+  return(numerator/denominator)
+}
+
+```
+
+
+```{r f1 score}
+
+f1_score <- function(x){
+  
+  numerator <- 2 * precision(x) * sensitivity(x)
+  denominator <- precision(x) + sensitivity(x)
+  return(numerator/denominator)
+}
+
+```
