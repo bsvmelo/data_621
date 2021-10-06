@@ -14,14 +14,15 @@ library(dplyr)
 library(tidyr)
 ```
 
+1. 
 ```{r load data}
-
-cm <- read.csv("C:/Users/wongs34/Documents/School/DATA 621/Homework/2/classification-output-data.csv", header=TRUE, sep=",")
+cm <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW2/classification-output-data.csv", header=TRUE, sep=",")
 
 ```
 
 From the confusion matrix table below, we've actual class value versus predicted class value. There are 119 true negative, 27 true positive, 30 false negative, and 5 false positive.
 
+2.
 ```{r confusion matrix}
 
 conf_mtx <- cm %>% dplyr::select(class, scored.class) %>% table()
@@ -29,6 +30,7 @@ conf_mtx
 
 ```
 
+3. 
 ```{r accuracy}
 
 accuracy <- function(x){
@@ -40,7 +42,7 @@ accuracy <- function(x){
 
 ```
 
-
+4. 
 ```{r classification error rate}
 
 error_rate <- function(x){
@@ -52,14 +54,13 @@ error_rate <- function(x){
 
 ```
 
-
 ```{r verification of accuracy and error sums to one}
 
 accuracy(conf_mtx) + error_rate(conf_mtx)
 
 ```
 
-
+5. 
 ```{r precision}
 
 precision <- function(x){
@@ -71,7 +72,7 @@ precision <- function(x){
 
 ```
 
-
+6. 
 ```{r sensitivity}
 
 sensitivity <- function(x){
@@ -83,7 +84,7 @@ sensitivity <- function(x){
 
 ```
 
-
+7. 
 ```{r specificity}
 
 specificity <- function(x){
@@ -95,7 +96,7 @@ specificity <- function(x){
 
 ```
 
-
+8. 
 ```{r f1 score}
 
 f1_score <- function(x){
@@ -106,3 +107,15 @@ f1_score <- function(x){
 }
 
 ```
+
+9. We will assume that $a = Precision$ and $b = Sensitivity$. To see the bounds of the f1 score we will be setting both a and b to their maximum and minimum.
+
+Assuming that $a = 1$ and $b = 1$ we can see that the F1 score is equal to 1. 
+
+```{=latex}
+\begin{tabular}{ll}
+F1 Score = \frac{2 * 1 * 1}{1 + 1} = 1
+\end{tabular}
+```
+
+If we assume that a and b are approaching zero we can see that the f1 value will be positive non zero number. Since a and b are bounded between 0 and 1 this means that the F1 function will always be between 0 and 1 which means that $ab < a$ and $ab < b$. 
