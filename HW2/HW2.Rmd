@@ -1,36 +1,79 @@
 ---
-title: "HW2"
+title: "DATA 621 Homework 2"
 author: "Critical Thinking Group 1"
-date: "9/27/2021"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
   pdf_document:
-    toc: true
-    number_sections: true
-urlcolor: cyan
-linkcolor: red
+    toc: yes
+    toc_depth: 6
+  html_document:
+    toc: yes
+    toc_depth: '2'
+    smart: no
+  word_document:
+    toc: yes
+    toc_depth: '2'
 ---
+\pagebreak
+\begin{center}
+\bigskip
+\bigskip
+\bigskip
+Prepared for:\\
+\medskip
+Prof. Dr. Nasrin Khansari\\
+\smallskip
+City University of New York, School of Professional Studies - Data 621\\
+\bigskip
+DATA 621 – Business Analytics and Data Mining\\
+\medskip
+Home Work 2\\
+\medskip
+Prepared by:\\
+\medskip
+Critical Thinking Group  1\\ 
+\medskip
+Vic Chan\\ 
+\smallskip
+Gehad Gad\\
+\smallskip
+Evan McLaughlin\\  
+\smallskip
+Bruno de Melo\\
+\smallskip
+Anjal Hussan\\
+\smallskip
+Zhouxin Shi\\
+\smallskip
+Sie Siong Wong\\
+\end{center}
 
-```{R}
+\pagebreak
+
+
+```{R message=FALSE, warning=FALSE, echo=FALSE,}
 library(dplyr)
 library(tidyr)
 ```
 
-1. 
+# 1. Data Source 
 ```{r load data}
+
 cm <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW2/classification-output-data.csv", header=TRUE, sep=",")
 
 ```
 
+# 2. Data Explained and Confusion Matrix
 From the confusion matrix table below, we've actual class value versus predicted class value. There are 119 true negative, 27 true positive, 30 false negative, and 5 false positive.
 
-2.
 ```{r confusion matrix}
 
 conf_mtx <- cm %>% dplyr::select(class, scored.class) %>% table()
 conf_mtx
 
 ```
-
-3. 
+\pagebreak
+# 3. Function for Accuracy of Predictions 
 ```{r accuracy}
 
 accuracy <- function(x){
@@ -41,8 +84,9 @@ accuracy <- function(x){
 }
 
 ```
+\pagebreak
+# 4. Function for Classification Error Rate of Predictions 
 
-4. 
 ```{r classification error rate}
 
 error_rate <- function(x){
@@ -54,13 +98,15 @@ error_rate <- function(x){
 
 ```
 
+
 ```{r verification of accuracy and error sums to one}
 
 accuracy(conf_mtx) + error_rate(conf_mtx)
 
 ```
+\pagebreak
+# 5. Function for Precisions of Predictions
 
-5. 
 ```{r precision}
 
 precision <- function(x){
@@ -71,8 +117,9 @@ precision <- function(x){
 }
 
 ```
+\pagebreak
+# 6. Function for Sensitivity of Predictions
 
-6. 
 ```{r sensitivity}
 
 sensitivity <- function(x){
@@ -83,8 +130,9 @@ sensitivity <- function(x){
 }
 
 ```
+\pagebreak
+# 7. Function for Specificity of Predictions 
 
-7. 
 ```{r specificity}
 
 specificity <- function(x){
@@ -95,8 +143,9 @@ specificity <- function(x){
 }
 
 ```
+\pagebreak
+# 8. F1 Score of Predictions 
 
-8. 
 ```{r f1 score}
 
 f1_score <- function(x){
@@ -107,8 +156,9 @@ f1_score <- function(x){
 }
 
 ```
-
-9. We will assume that $a = Precision$ and $b = Sensitivity$. To see the bounds of the f1 score we will be setting both a and b to their maximum and minimum.
+\pagebreak
+# 9. Bound on the F1 score
+We will assume that $a = Precision$ and $b = Sensitivity$. To see the bounds of the f1 score we will be setting both a and b to their maximum and minimum.
 
 Assuming that $a = 1$ and $b = 1$ we can see that the F1 score is equal to 1. 
 
@@ -134,9 +184,7 @@ fetch_accuracy <- function(df){
   
   return(round((TP + TN)/(TP + FP + TN + FN),4))
 }
-
 #write function
-
 fetch_roc_curve <- function(x,p){
     x <- x[order(p, decreasing=TRUE)]
     
@@ -148,14 +196,37 @@ fetch_roc_curve <- function(x,p){
     
     return(c(df=roc_df, auc = auc))
 }
-
 #apply function to dataset
-
 roc_data <- fetch_roc_curve(cm$class, cm$scored.probability)
 plot(roc_data[[2]],roc_data[[1]], type = 'l', main = "ROC",xlab="1-Spec (FPR)", ylab = "Sens (TPR)")
 abline(0,1, lty=3)
 legend(0.7,0.4, round(roc_data$auc,8), title = 'AUC')
-
 ```
 This curve illustrates the true positive rate versus the false positive rate and enables us to assess the accuracy. We are thus able to classify our observations through the establishment of probability thresholds. AUC is a measurement of our model's suitability for determining positive and negative outcomes. Our relatively high AUC is a good "grade" for our desire to correctly guess outcomes.
+
+\pagebreak
+
+# 13. Investigation of the `pROC` R package. 
+
+We used the `pROC` R package to generate an ROC curve for the data set. 
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+library(pROC)
+```
+```{r warning=FALSE, message=FALSE}
+rcurve <- roc(cm$class~cm$scored.probability)
+plot(rcurve, main="ROC Curve") 
+```
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE, results='asis'}
+bestPROC <- coords(rcurve, "best", ret=c("threshold", "1-specificity", "sensitivity"))
+```
+
+Best Threshold value using pROC package is `r (sprintf("{Threshold = %f,fpr = %f,tpr = %f}", 
+            bestPROC[1], bestPROC[2], bestPROC[3]))`
+
+Note: The second method (using auc) predicts better than first method (using distance from (0,1))
+
+
+\newpage
 
