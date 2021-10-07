@@ -206,7 +206,7 @@ This curve illustrates the true positive rate versus the false positive rate and
 
 \pagebreak
 
-#13. Investigation of the `pROC` R package. 
+# 13. Investigation of the `pROC` R package. 
 
 We used the `pROC` R package to generate an ROC curve for the data set. 
 
