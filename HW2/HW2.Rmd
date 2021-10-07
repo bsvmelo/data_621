@@ -170,6 +170,8 @@ F1 Score = \frac{2 * 1 * 1}{1 + 1} = 1
 
 If we assume that a and b are approaching zero we can see that the f1 value will be positive non zero number. Since a and b are bounded between 0 and 1 this means that the F1 function will always be between 0 and 1 which means that $ab < a$ and $ab < b$. 
 
+# 10. ROC Curve
+
 ```{r ROC}
 fetch_accuracy <- function(df){
   dt <- df %>% dplyr::select( scored.class, class ) %>% table()
