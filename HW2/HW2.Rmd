@@ -56,14 +56,14 @@ library(dplyr)
 library(tidyr)
 ```
 
-# Data Source 
+# 1. Data Source 
 ```{r load data}
 
 cm <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW2/classification-output-data.csv", header=TRUE, sep=",")
 
 ```
 
-# Data Explained and Confusion Matrix
+# 2. Data Explained and Confusion Matrix
 From the confusion matrix table below, we've actual class value versus predicted class value. There are 119 true negative, 27 true positive, 30 false negative, and 5 false positive.
 
 ```{r confusion matrix}
@@ -73,7 +73,7 @@ conf_mtx
 
 ```
 \pagebreak
-# Function for Accuracy of Predictions 
+# 3. Function for Accuracy of Predictions 
 ```{r accuracy}
 
 accuracy <- function(x){
@@ -85,7 +85,7 @@ accuracy <- function(x){
 
 ```
 \pagebreak
-# Function for Classification Error Rate of Predictions 
+# 4. Function for Classification Error Rate of Predictions 
 
 ```{r classification error rate}
 
@@ -105,7 +105,7 @@ accuracy(conf_mtx) + error_rate(conf_mtx)
 
 ```
 \pagebreak
-# Function for Precisions of Predictions
+# 5. Function for Precisions of Predictions
 
 ```{r precision}
 
@@ -118,7 +118,7 @@ precision <- function(x){
 
 ```
 \pagebreak
-# Function for Sensitivity of Predictions
+# 6. Function for Sensitivity of Predictions
 
 ```{r sensitivity}
 
@@ -131,7 +131,7 @@ sensitivity <- function(x){
 
 ```
 \pagebreak
-# Function for Specificity of Predictions 
+# 7. Function for Specificity of Predictions 
 
 ```{r specificity}
 
@@ -144,7 +144,7 @@ specificity <- function(x){
 
 ```
 \pagebreak
-# F1 Score of Predictions 
+# 8. F1 Score of Predictions 
 
 ```{r f1 score}
 
@@ -156,11 +156,57 @@ f1_score <- function(x){
 }
 
 ```
+\pagebreak
+# 9. Bound on the F1 score
+We will assume that $a = Precision$ and $b = Sensitivity$. To see the bounds of the f1 score we will be setting both a and b to their maximum and minimum.
 
+Assuming that $a = 1$ and $b = 1$ we can see that the F1 score is equal to 1. 
+
+```{=latex}
+\begin{tabular}{ll}
+F1 Score = \frac{2 * 1 * 1}{1 + 1} = 1
+\end{tabular}
+```
+
+If we assume that a and b are approaching zero we can see that the f1 value will be positive non zero number. Since a and b are bounded between 0 and 1 this means that the F1 function will always be between 0 and 1 which means that $ab < a$ and $ab < b$. 
+
+```{r ROC}
+fetch_accuracy <- function(df){
+  dt <- df %>% dplyr::select( scored.class, class ) %>% table()
+  #positive
+  TP <- dt[2,2]
+  #negative
+  TN <- dt[1,1]
+  #false positive
+  FP <- dt[2,1]
+  #false negative
+  FN <- dt[1,2]
+  
+  return(round((TP + TN)/(TP + FP + TN + FN),4))
+}
+#write function
+fetch_roc_curve <- function(x,p){
+    x <- x[order(p, decreasing=TRUE)]
+    
+    TP = cumsum(x)/sum(x)
+    FP = cumsum(!x)/sum(!x)
+    
+    roc_df <- data.frame(TP, FP)
+    auc <- sum(TP * c(diff(FP), 0)) + sum(c(diff(TP), 0) * c(diff(FP), 0))/2
+    
+    return(c(df=roc_df, auc = auc))
+}
+#apply function to dataset
+roc_data <- fetch_roc_curve(cm$class, cm$scored.probability)
+plot(roc_data[[2]],roc_data[[1]], type = 'l', main = "ROC",xlab="1-Spec (FPR)", ylab = "Sens (TPR)")
+abline(0,1, lty=3)
+legend(0.7,0.4, round(roc_data$auc,8), title = 'AUC')
+```
+This curve illustrates the true positive rate versus the false positive rate and enables us to assess the accuracy. We are thus able to classify our observations through the establishment of probability thresholds. AUC is a measurement of our model's suitability for determining positive and negative outcomes. Our relatively high AUC is a good "grade" for our desire to correctly guess outcomes.
 
 \pagebreak
 
-# Investigation of the `pROC` R package. 
+#13. Investigation of the `pROC` R package. 
 
 We used the `pROC` R package to generate an ROC curve for the data set. 
 
