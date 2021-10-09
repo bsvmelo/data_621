@@ -54,6 +54,7 @@ Sie Siong Wong\\
 ```{R message=FALSE, warning=FALSE, echo=FALSE,}
 library(dplyr)
 library(tidyr)
+library(knitr)
 ```
 
 # 1. Data Source 
@@ -207,6 +208,24 @@ legend(0.7,0.4, round(roc_data$auc,8), title = 'AUC')
 This curve illustrates the true positive rate versus the false positive rate and enables us to assess the accuracy. We are thus able to classify our observations through the establishment of probability thresholds. AUC is a measurement of our model's suitability for determining positive and negative outcomes. Our relatively high AUC is a good "grade" for our desire to correctly guess outcomes.
 
 \pagebreak
+
+# 11. Use your created R functions and the provided classification output data set to produce all of the classification metrics discussed above.
+
+```{r}
+accuracy(cm)
+error_rate (cm)
+f1_score(cm)
+precision(cm)
+sensitivity(cm)
+specificity(cm)
+```
+
+
+```{r}
+Value <- c(accuracy(cm), error_rate (cm), f1_score(cm),precision(cm), sensitivity(cm), specificity(cm))
+names(Value) <- c("accuracy", "error_rate", "f1_score", "precision", "sensitivity", "specificity")
+kable(Value, col.names = "Score", caption = "Summary of Classification Metrics")
+```
 
 # 13. Investigation of the `pROC` R package. 
 
