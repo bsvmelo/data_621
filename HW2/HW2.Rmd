@@ -168,22 +168,17 @@ f1_score <- function(x){
 # 9. Bound on the F1 score
 We will assume that $a = Precision$ and $b = Sensitivity$. So, we re-rewrite:
 
-
-```{=latex}
-\begin{tabular}{ll}
-$F1 Score = \frac{2 * a * b}{a + b}$
-\end{tabular}
-```
+$$
+F1Score = \frac{2 * a * b}{a + b}
+$$
 
 To see the bounds of the f1 score we will be setting both $a$ and $b$ to their maximum and minimum.
 
 Assuming that $a = 1$ and $b = 1$ we can see that the F1 score is equal to 1. 
 
-```{=latex}
-\begin{tabular}{ll}
-$F1 Score = \frac{2 * 1 * 1}{1 + 1} = 1$
-\end{tabular}
-```
+$$
+F1Score = \frac{2 * 1 * 1}{1 + 1} = 1
+$$
 
 If we assume that $a$ and $b$ are approaching zero we can see that the f1 value will be positive non zero number. Since a and b are bounded between 0 and 1 this means that the F1 function will always be between 0 and 1 which means that $ab < a$ and $ab < b$. 
 
