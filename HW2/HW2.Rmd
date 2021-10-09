@@ -5,7 +5,7 @@ date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
   pdf_document:
     toc: yes
-    toc_depth: 6
+    toc_depth: 4
   html_document:
     toc: yes
     toc_depth: '2'
@@ -51,10 +51,12 @@ Sie Siong Wong\\
 \pagebreak
 
 
-```{R message=FALSE, warning=FALSE, echo=FALSE,}
+```{R message=FALSE, warning=FALSE, echo=FALSE}
 library(dplyr)
 library(tidyr)
 library(knitr)
+library(caret)
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 ```
 
 # 1. Data Source 
@@ -64,16 +66,16 @@ cm <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/H
 
 ```
 
-# 2. Data Explained and Confusion Matrix
-From the confusion matrix table below, we've actual class value versus predicted class value. There are 119 true negative, 27 true positive, 30 false negative, and 5 false positive.
+# 2. Data Set and Confusion Matrix
+From the confusion matrix table below, we have actual class or reference value versus predicted class value, and we assume *0* to be the non-event class and *1* to be positive class. Class values are display in columns, while predicted values are displayed in the rows. So there are 119 true negatives (TN), 27 true positives (TP), 30 false negatives (FN), and 5 false positives (FP).
 
 ```{r confusion matrix}
 
-conf_mtx <- cm %>% dplyr::select(class, scored.class) %>% table()
+conf_mtx <- cm %>% dplyr::select(scored.class, class) %>% table()
 conf_mtx
 
 ```
-\pagebreak
+
 # 3. Function for Accuracy of Predictions 
 ```{r accuracy}
 
@@ -85,7 +87,6 @@ accuracy <- function(x){
 }
 
 ```
-\pagebreak
 # 4. Function for Classification Error Rate of Predictions 
 
 ```{r classification error rate}
@@ -99,6 +100,8 @@ error_rate <- function(x){
 
 ```
 
+We verify below that `accuracy` and an `error rate` sums to one.
+
 
 ```{r verification of accuracy and error sums to one}
 
@@ -110,20 +113,37 @@ accuracy(conf_mtx) + error_rate(conf_mtx)
 
 ```{r precision}
 
+
 precision <- function(x){
   
-  numerator <- x[1,1]
-  denominator <- x[1,1] + x[1,2]
+  numerator <- x[2,2]
+  denominator <- x[2,2] + x[2,1]
   return(numerator/denominator)
 }
 
 ```
-\pagebreak
+
 # 6. Function for Sensitivity of Predictions
 
 ```{r sensitivity}
 
+
 sensitivity <- function(x){
+  
+  numerator <- x[2,2]
+  denominator <- x[2,2] + x[1,2]
+  return(numerator/denominator)
+}
+
+
+```
+
+# 7. Function for Specificity of Predictions 
+
+```{r specificity}
+
+
+specificity <- function(x){
   
   numerator <- x[1,1]
   denominator <- x[1,1] + x[2,1]
@@ -131,20 +151,7 @@ sensitivity <- function(x){
 }
 
 ```
-\pagebreak
-# 7. Function for Specificity of Predictions 
 
-```{r specificity}
-
-specificity <- function(x){
-  
-  numerator <- x[2,2]
-  denominator <- x[2,2] + x[1,2]
-  return(numerator/denominator)
-}
-
-```
-\pagebreak
 # 8. F1 Score of Predictions 
 
 ```{r f1 score}
@@ -159,21 +166,32 @@ f1_score <- function(x){
 ```
 \pagebreak
 # 9. Bound on the F1 score
-We will assume that $a = Precision$ and $b = Sensitivity$. To see the bounds of the f1 score we will be setting both a and b to their maximum and minimum.
+We will assume that $a = Precision$ and $b = Sensitivity$. So, we re-rewrite:
+
+
+```{=latex}
+\begin{tabular}{ll}
+$F1 Score = \frac{2 * a * b}{a + b}$
+\end{tabular}
+```
+
+To see the bounds of the f1 score we will be setting both $a$ and $b$ to their maximum and minimum.
 
 Assuming that $a = 1$ and $b = 1$ we can see that the F1 score is equal to 1. 
 
 ```{=latex}
 \begin{tabular}{ll}
-F1 Score = \frac{2 * 1 * 1}{1 + 1} = 1
+$F1 Score = \frac{2 * 1 * 1}{1 + 1} = 1$
 \end{tabular}
 ```
 
-If we assume that a and b are approaching zero we can see that the f1 value will be positive non zero number. Since a and b are bounded between 0 and 1 this means that the F1 function will always be between 0 and 1 which means that $ab < a$ and $ab < b$. 
+If we assume that $a$ and $b$ are approaching zero we can see that the f1 value will be positive non zero number. Since a and b are bounded between 0 and 1 this means that the F1 function will always be between 0 and 1 which means that $ab < a$ and $ab < b$. 
 
-# 10. ROC Curve
+\pagebreak
+# 10. Write a function to write a ROC curve
 
-```{r ROC}
+
+```{r ROC }
 fetch_accuracy <- function(df){
   dt <- df %>% dplyr::select( scored.class, class ) %>% table()
   #positive
@@ -206,26 +224,60 @@ abline(0,1, lty=3)
 legend(0.7,0.4, round(roc_data$auc,8), title = 'AUC')
 ```
 This curve illustrates the true positive rate versus the false positive rate and enables us to assess the accuracy. We are thus able to classify our observations through the establishment of probability thresholds. AUC is a measurement of our model's suitability for determining positive and negative outcomes. Our relatively high AUC is a good "grade" for our desire to correctly guess outcomes.
+       
+\pagebreak
+# 11. Classification metrics output       
+       
+```{r  message=FALSE, warning=FALSE, echo=FALSE}
+Value <- c(round(accuracy(conf_mtx),4), round(error_rate(conf_mtx),4), round(f1_score(conf_mtx),4),round(precision(conf_mtx),4), round(sensitivity(conf_mtx),4), round(specificity(conf_mtx),4))
+
+names(Value) <- c("Accuracy", "Error Rate", "F1_score", "Precision", "Sensitivity", "Specificity")
+
+```
+              
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+kable(Value, col.names = "Score", caption = "Summary of Classification Metrics") 
+```
+
+  
+
+# 12. Investigation of the `caret` R package. 
+We used the `caret` R package to calculate a confusion Matrix, sensitivity, and specificity for the data set. See below for the confusion matrix:
+
+
+```{r warning=FALSE, message=FALSE}
+
+conf_mtx_caret <- confusionMatrix(factor(cm$scored.class), factor(cm$class),  positive = '1')
+
+conf_mtx_caret$table
+
+
+```
+Result from the `caret` package is similar to our calculated matrix. For two classes, the `caret` function assumes as default that the class corresponding to an event is the first class level, in our case *0*. We changed the positive argument in the function, and assume the positive class to be *1*.
+
+```{r}
+conf_mtx == conf_mtx_caret$table
+```
+Calling `confusionMatrix` function can be used to generate statistics.
+
+```{r}
+conf_mtx_caret
+```
+
+Using the function `byclass` argument, we can extract *sensitivity* and *specificity* measures and thus compare with our own functions.
+
+
+```{r}
+sens<-conf_mtx_caret$byClass[1]
+spec<-conf_mtx_caret$byClass[2]
+
+sensitivity(conf_mtx) == sens
+specificity(conf_mtx) == spec
+```
+
 
 \pagebreak
 
-# 11. Use your created R functions and the provided classification output data set to produce all of the classification metrics discussed above.
-
-```{r}
-accuracy(cm)
-error_rate (cm)
-f1_score(cm)
-precision(cm)
-sensitivity(cm)
-specificity(cm)
-```
-
-
-```{r}
-Value <- c(accuracy(cm), error_rate (cm), f1_score(cm),precision(cm), sensitivity(cm), specificity(cm))
-names(Value) <- c("accuracy", "error_rate", "f1_score", "precision", "sensitivity", "specificity")
-kable(Value, col.names = "Score", caption = "Summary of Classification Metrics")
-```
 
 # 13. Investigation of the `pROC` R package. 
 
