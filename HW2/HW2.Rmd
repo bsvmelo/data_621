@@ -213,6 +213,10 @@ fetch_roc_curve(cm$class, cm$scored.probability)
 ```
 This curve illustrates the true positive rate versus the false positive rate and enables us to assess the accuracy. We are thus able to classify our observations through the establishment of probability thresholds. AUC is a measurement of our model's suitability for determining positive and negative outcomes. Our relatively high AUC is a good "grade" for our desire to correctly guess outcomes.
        
+
+
+
+
 # 11. Classification metrics output       
 
 Table 1 below shows the results of the functions we built, applied to the confusion matrix.      
@@ -226,7 +230,7 @@ kable(Value, col.names = "Score", caption = "Summary of Classification Metrics")
 ```
 
   
-
+\pagebreak
 # 12. Investigation of the `caret` R package. 
 We used the `caret` R package to calculate a confusion Matrix, sensitivity, and specificity for the data set. See below for the confusion matrix:
 
