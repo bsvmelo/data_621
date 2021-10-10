@@ -187,20 +187,6 @@ If we assume that $a$ and $b$ are approaching zero we can see that the f1 value 
 
 
 ```{r ROC }
-fetch_accuracy <- function(df){
-  dt <- df %>% dplyr::select( scored.class, class ) %>% table()
-  #positive
-  TP <- dt[2,2]
-  #negative
-  TN <- dt[1,1]
-  #false positive
-  FP <- dt[2,1]
-  #false negative
-  FN <- dt[1,2]
-  
-  return(round((TP + TN)/(TP + FP + TN + FN),4))
-}
-#write function
 fetch_roc_curve <- function(x,p){
     x <- x[order(p, decreasing=TRUE)]
     
@@ -210,13 +196,15 @@ fetch_roc_curve <- function(x,p){
     roc_df <- data.frame(TP, FP)
     auc <- sum(TP * c(diff(FP), 0)) + sum(c(diff(TP), 0) * c(diff(FP), 0))/2
     
-    return(c(df=roc_df, auc = auc))
+    plot_roc <- function() {
+      plot(roc_df[[2]],roc_df[[1]], type = 'l', main = "ROC",xlab="1-Spec (FPR)", ylab = "Sens (TPR)")
+      abline(0,1, lty=3)
+      legend(0.7,0.4, round(auc,8),title = 'AUC')
+      }
+    
+    return(list(auc,plot_roc()[0]))
 }
-#apply function to dataset
-roc_data <- fetch_roc_curve(cm$class, cm$scored.probability)
-plot(roc_data[[2]],roc_data[[1]], type = 'l', main = "ROC",xlab="1-Spec (FPR)", ylab = "Sens (TPR)")
-abline(0,1, lty=3)
-legend(0.7,0.4, round(roc_data$auc,8), title = 'AUC')
+fetch_roc_curve(cm$class, cm$scored.probability)
 ```
 This curve illustrates the true positive rate versus the false positive rate and enables us to assess the accuracy. We are thus able to classify our observations through the establishment of probability thresholds. AUC is a measurement of our model's suitability for determining positive and negative outcomes. Our relatively high AUC is a good "grade" for our desire to correctly guess outcomes.
        
