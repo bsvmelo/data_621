@@ -59,12 +59,17 @@ library(caret)
 opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 ```
 
-# 1. Data Source 
+# 1. Data Source
+
 ```{r load data}
 
 cm <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW2/classification-output-data.csv", header=TRUE, sep=",")
 
 ```
+
+R markdown for this howework can be found at:
+https://github.com/ahussan/DATA_621_Group1/blob/main/HW2/HW2.Rmd
+
 
 # 2. Data Set and Confusion Matrix
 From the confusion matrix table below, we have actual class or reference value versus predicted class value, and we assume *0* to be the non-event class and *1* to be positive class. Class values are display in columns, while predicted values are displayed in the rows. So there are 119 true negatives (TN), 27 true positives (TP), 30 false negatives (FN), and 5 false positives (FP).
@@ -108,7 +113,7 @@ We verify below that `accuracy` and an `error rate` sums to one.
 accuracy(conf_mtx) + error_rate(conf_mtx)
 
 ```
-\pagebreak
+
 # 5. Function for Precisions of Predictions
 
 ```{r precision}
@@ -202,23 +207,21 @@ fetch_roc_curve <- function(x,p){
       legend(0.7,0.4, round(auc,8),title = 'AUC')
       }
     
-    return(list(auc,plot_roc()[0]))
+    return(plot_roc())
 }
 fetch_roc_curve(cm$class, cm$scored.probability)
 ```
 This curve illustrates the true positive rate versus the false positive rate and enables us to assess the accuracy. We are thus able to classify our observations through the establishment of probability thresholds. AUC is a measurement of our model's suitability for determining positive and negative outcomes. Our relatively high AUC is a good "grade" for our desire to correctly guess outcomes.
        
-\pagebreak
 # 11. Classification metrics output       
-       
-```{r  message=FALSE, warning=FALSE, echo=FALSE}
+
+Table 1 below shows the results of the functions we built, applied to the confusion matrix.      
+
+```{r  classiftable}
 Value <- c(round(accuracy(conf_mtx),4), round(error_rate(conf_mtx),4), round(f1_score(conf_mtx),4),round(precision(conf_mtx),4), round(sensitivity(conf_mtx),4), round(specificity(conf_mtx),4))
 
 names(Value) <- c("Accuracy", "Error Rate", "F1_score", "Precision", "Sensitivity", "Specificity")
 
-```
-              
-```{r message=FALSE, warning=FALSE, echo=FALSE}
 kable(Value, col.names = "Score", caption = "Summary of Classification Metrics") 
 ```
 
@@ -256,10 +259,26 @@ spec<-conf_mtx_caret$byClass[2]
 
 sensitivity(conf_mtx) == sens
 specificity(conf_mtx) == spec
+
+```
+
+Overall results comparison in table 2 below:
+
+```{r echo=FALSE}
+car_value<- c(conf_mtx_caret$overall[1], 1-conf_mtx_caret$overall[1],spec<-conf_mtx_caret$byClass[7],conf_mtx_caret$byClass[5], conf_mtx_caret$byClass[1],conf_mtx_caret$byClass[2])
+
+names(car_value)<-names(Value)  
+
+df<-data.frame(car_value)
+df<-data.frame(Value)
+df[,2]<-data.frame(car_value)
+colnames(df)<-c("Own", "Caret")
+  
+kable(df, caption = "Summary of Classification Metrics", digits = 4,  align = "c") 
 ```
 
 
-\pagebreak
+
 
 
 # 13. Investigation of the `pROC` R package. 
