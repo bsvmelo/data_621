@@ -1,0 +1,58 @@
+---
+title: "DATA 621 Homework 3"
+author: "Critical Thinking Group 1"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 4
+  html_document:
+    toc: yes
+    toc_depth: '2'
+    smart: no
+  word_document:
+    toc: yes
+    toc_depth: '2'
+---
+\pagebreak
+\begin{center}
+\bigskip
+\bigskip
+\bigskip
+Prepared for:\\
+\medskip
+Prof. Dr. Nasrin Khansari\\
+\smallskip
+City University of New York, School of Professional Studies - Data 621\\
+\bigskip
+DATA 621 – Business Analytics and Data Mining\\
+\medskip
+Home Work 3\\
+\medskip
+Prepared by:\\
+\medskip
+Critical Thinking Group  1\\ 
+\medskip
+Vic Chan\\ 
+\smallskip
+Gehad Gad\\
+\smallskip
+Evan McLaughlin\\  
+\smallskip
+Bruno de Melo\\
+\smallskip
+Anjal Hussan\\
+\smallskip
+Zhouxin Shi\\
+\smallskip
+Sie Siong Wong\\
+\end{center}
+
+\pagebreak
+
+
+```{R message=FALSE, warning=FALSE, echo=FALSE}
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+```
+
+
