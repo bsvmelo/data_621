@@ -1,0 +1,151 @@
+---
+title: "DATA 621 Homework 3"
+author: "Critical Thinking Group 1"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 4
+  html_document:
+    toc: yes
+    toc_depth: '2'
+    smart: no
+  word_document:
+    toc: yes
+    toc_depth: '2'
+---
+\pagebreak
+\begin{center}
+\bigskip
+\bigskip
+\bigskip
+Prepared for:\\
+\medskip
+Prof. Dr. Nasrin Khansari\\
+\smallskip
+City University of New York, School of Professional Studies - Data 621\\
+\bigskip
+DATA 621 – Business Analytics and Data Mining\\
+\medskip
+Home Work 3\\
+\medskip
+Prepared by:\\
+\medskip
+Critical Thinking Group  1\\ 
+\medskip
+Vic Chan\\ 
+\smallskip
+Gehad Gad\\
+\smallskip
+Evan McLaughlin\\  
+\smallskip
+Bruno de Melo\\
+\smallskip
+Anjal Hussan\\
+\smallskip
+Zhouxin Shi\\
+\smallskip
+Sie Siong Wong\\
+\end{center}
+
+\pagebreak
+
+
+```{R message=FALSE, warning=FALSE, echo=FALSE}
+if (!require('ggplot2')) (install.packages('ggplot2'))
+if(!require('corrplot')) (install.packages("corrplot"))
+if(!require('corrgram')) (install.packages("corrgram"))
+if(!require('Hmisc')) (install.packages("Hmisc"))
+if(!require('DataExplorer')) (install.packages("DataExplorer"))
+```
+
+
+\newpage
+
+# Introduction
+
+Crime has a high cost to all parts of society and it can have severe long term impact on neighborhoods. If crime rises in the neighborhood, it affects the neighborhood. Additionally, crime can even have a health cost to the community in that the perception of a dangerous neighborhood was associated with significantly lower odds of having high physical activity among both men and women. It is important to understand the propensity for crime levels of a neighborhood before investing in that neighborhood. 
+
+# Statement of the Problem
+
+The purpose of this report is to develop a binary logistic regression model to determine if the neighborhood will be at risk for high crime level.
+
+# Data Exploration  
+
+```{r load data, echo=FALSE}
+train <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW3/crime-training-data_modified.csv", header=TRUE, sep=",")
+```
+
+
+Let's take a look to the first few rows of our train data set
+```{r, echo=FALSE}
+print(head(train, 10))
+```
+Looks like all the columns are numerical. The target variable is a binary variable indicating if the crime rate above the median rate (1) or not (0)
+
+### Means
+Column means of our train data set are as follows: 
+```{r, echo=FALSE}
+print(colMeans(train))
+
+```
+
+### Standard Deviation
+Now let's take a look at the standard deviation of our predictor variables:
+```{r, echo=FALSE}
+print(apply(train, 2, sd))
+
+```
+
+### Median Value
+Let's take a look at the median value of our predictor variables:
+```{r, echo=FALSE}
+print(apply(train, 2, median))
+
+```
+
+### Bar chart or box plot
+```{r, echo=FALSE}
+boxplot(train, use.cols = TRUE)
+
+```
+
+### Correlation matrix
+
+```{r, echo=FALSE}
+train.cor = cor(train)
+print(train.cor)
+```
+
+
+```{r, echo=FALSE}
+library(corrgram)
+corrgram(train, order=TRUE, lower.panel=panel.shade,
+  upper.panel=panel.pie, text.panel=panel.txt,
+  main="visualize the data in correlation matrices ")
+
+```
+
+### Compare Target in Training
+
+We make sure there are no issues with an inappropriate distribution of the target variable in our training data.
+
+```{r, echo=FALSE, warning=FALSE}
+knitr::kable(table(train$target))
+```
+
+### Histogram of Variables
+
+```{r, echo=FALSE, warning=FALSE}
+plot_histogram(train)
+relationships <- train
+relationships$chas <- NULL
+plot_scatterplot(relationships, "target")
+```
+
+
+# Data Preparation
+
+# Build Models
+
+# Select Models
