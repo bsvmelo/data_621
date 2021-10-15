@@ -148,4 +148,26 @@ plot_scatterplot(relationships, "target")
 
 # Build Models
 
+### Model 1 - All Variables
+
+First we will be creating a model with all the variables in the original dataset to create a baseline for other models. Based on the p-values results from this model we will be able to eliminate variables with large large p-values
+
+```{r}
+m1 = glm(target~., data=train, family=binomial)
+summary(m1)
+```
+
+We can see that variables *zn*, *nox*, *age*, *dis*, *rad*, *ptratio*, and *medv* have p values that are close to smaller than 0.05 which will be used in the next model
+
+### Model 2
+
+```{r}
+m2 = glm(target ~ zn + nox + age + dis + rad + ptratio + medv, data=train, family=binomial)
+summary(m2)
+```
+
+### Model 3
+
+
+
 # Select Models
