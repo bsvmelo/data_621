@@ -57,6 +57,7 @@ if(!require('corrplot')) (install.packages("corrplot"))
 if(!require('corrgram')) (install.packages("corrgram"))
 if(!require('Hmisc')) (install.packages("Hmisc"))
 if(!require('DataExplorer')) (install.packages("DataExplorer"))
+if(!require('MASS')) (install.packages('MASS'))
 ```
 
 
@@ -150,7 +151,7 @@ plot_scatterplot(relationships, "target")
 
 ### Model 1 - All Variables
 
-First we will be creating a model with all the variables in the original dataset to create a baseline for other models. Based on the p-values results from this model we will be able to eliminate variables with large large p-values
+First we will be creating a model with all the variables in the original dataset to create a baseline for other models. Based on the p-values results from this model we will be able to eliminate variables with large p-values
 
 ```{r}
 m1 = glm(target~., data=train, family=binomial)
@@ -159,15 +160,23 @@ summary(m1)
 
 We can see that variables *zn*, *nox*, *age*, *dis*, *rad*, *ptratio*, and *medv* have p values that are close to smaller than 0.05 which will be used in the next model
 
-### Model 2
+### Model 2 - Hand Pick Model
 
 ```{r}
 m2 = glm(target ~ zn + nox + age + dis + rad + ptratio + medv, data=train, family=binomial)
 summary(m2)
 ```
 
-### Model 3
+### Model 3 - Backward Step Model
+We will now build a model using backwards selection in order to compare if using backwards selection is better than hand picking values to create a model
+In order to create the the backward step model we will be using the *MASS* package which includes the *stepAIC* function. The backward step requires
+us to pass a model which contains all of the predictors. Then the function will fit all the models which contains all but one of the predictors and
+will then pick the best model using AIC
+```{r}
+m3 = stepAIC(m1, direction='both', trace=FALSE)
+summary(m3)
+```
 
-
+### Model 3 - Foward Step Model
 
 # Select Models
