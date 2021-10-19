@@ -143,6 +143,47 @@ relationships <- train
 relationships$chas <- NULL
 plot_scatterplot(relationships, "target")
 ```
+Now that we have a basic familiarity with our data, we can analyze the relationship between the numeric variables we've brought in and the target variable. We can employ boxplots and a correlation matrix to quickly analyze this, including paired plots of the numeric feature variables. 
+
+```{r, echo=FALSE, warning=FALSE}
+
+#convert features to factor and add a dataset feature
+train$chas <- as.factor(train$chas)
+train$target <- as.factor(train$target)
+train$dataset <- 'train'
+
+plotfontsize <- 8
+train_int_names <- train %>% select_if(is.numeric)
+int_names <- names(train_int_names)
+
+for (i in int_names) {
+  assign(paste0("var_",i), ggplot(train, aes_string(x = train$target, y = i)) + 
+          geom_boxplot(color = 'steelblue', 
+                       outlier.color = 'firebrick', 
+                       outlier.alpha = 0.35) +
+#scale_y_continuous
+          labs(title = paste0(i,' vs target'), y = i, x= 'target') +
+          theme_minimal() + 
+          theme(
+            plot.title = element_text(hjust = 0.45),
+            panel.grid.major.y =  element_line(color = "grey", linetype = "dashed"),
+            panel.grid.major.x = element_blank(),
+            panel.grid.minor.y = element_blank(),
+            panel.grid.minor.x = element_blank(),
+            axis.ticks.x = element_line(color = "grey"),
+            text = element_text(size=plotfontsize)
+          ))
+}
+gridExtra::grid.arrange(var_age, var_dis, var_indus,var_lstat,
+                        var_medv,var_nox,var_ptratio,var_rad, 
+                        var_rm, var_tax, var_zn, nrow=4)
+
+numeric_values <- train %>% select_if(is.numeric)
+train_cor <- cor(numeric_values)
+corrplot.mixed(train_cor, tl.col = 'black', tl.pos = 'lt')
+```
+
+There are a couple of items to note in the above graphics. First, in the boxplots, we observe many outliers, which could impact our regression, limiting its predictive value. Age, nox, and dis all appear to be highly correlated with our target, and numerous other features appear to have some weaker correlative relationship. Now that we've assessed the relationship between our features and the target, we can take a quick look, through our correlation matrix, at the relationship between the variables themselves. Our correlation matrix makes clear that multicollinearity is a potential issue within our observations, and we need to keep this in mind as we create and select our models.
 
 
 # Data Preparation
@@ -180,3 +221,4 @@ summary(m3)
 ### Model 3 - Foward Step Model
 
 # Select Models
+
