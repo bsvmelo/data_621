@@ -58,6 +58,7 @@ if(!require('corrgram')) (install.packages("corrgram"))
 if(!require('Hmisc')) (install.packages("Hmisc"))
 if(!require('DataExplorer')) (install.packages("DataExplorer"))
 if(!require('MASS')) (install.packages('MASS'))
+if(!require('alr4')) (install.packages('alr4'))
 ```
 
 
@@ -242,6 +243,44 @@ The analysis of deviance table shows further confirms that dropping these 4 vari
 
 anova(m5,m1, test="Chi")
 
+```
+
+### Model 6 - Transformed Predictors Model
+
+We do a box plot for each predictors used in model m5 to check skewness. Out of the 8 predictors, these 5 predictors {*zn*, *nox*, *rad*, *tax*, *Ptratio*} are quite skewed. Thus, we shall include log of these predictors in our logistic regression model m5 or m3.
+
+```{r predictor transformation check}
+par(mfrow=c(2,4))
+boxplot(zn~target, ylab="Zn",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
+boxplot(nox~target, ylab="Nox",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
+boxplot(age~target, ylab="Age",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
+boxplot(dis~target, ylab="Dis",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
+boxplot(rad~target, ylab="Rad",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
+boxplot(tax~target, ylab="Tax",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
+boxplot(ptratio~target, ylab="Ptratio",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
+boxplot(medv~target, ylab="Medv",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
+```
+
+Now, we create a new model to include those log transformed predictors. We can see from the summary table the impact of including transformed predictors give lower deviance and lower AIC.
+
+```{r}
+m6 = glm(target~zn+nox+age+dis+rad+tax+ptratio+medv+log(zn+1)+log(nox)+log(rad)+log(tax)+log(ptratio),family=binomial(),data=train)
+summary(m6)
+```
+
+Next we can check if the logistic regression model m6 is adequate or not by doing marginal model plots. From the figure below, it shows both the loess estimate curve and the fitted values curve are in agreement, and that indicates the model m6 is a valid model.
+
+```{r warning=FALSE}
+mmps(m6, layout=c(4,4))
+```
+
+We can further check the validity of model m6 by plotting leverage values versus standardized deviance. The average leverage is equal to (p + 1)/n = (14 + 1)/466 = 0.032. The p value here is the number of predictors from m6 including the intercept. So the usual cut-off is, 0.064, equal to twice the average leverage value. There are number of high leverage points can be seen in the figure below and can be removed at the data preparation step.
+
+```{r}
+hvalues <- influence(m6)$hat
+stanresDeviance <- residuals(m6)/sqrt(1-hvalues)
+plot(hvalues,stanresDeviance,ylab="Standardized Deviance Residuals",xlab="Leverage Values",ylim=c(-3,4),xlim=c(-0.05,0.45))
+abline(v=2*15/length(train$target),lty=2)
 ```
 
 
