@@ -139,6 +139,7 @@ knitr::kable(table(train$target))
 ### Histogram of Variables
 
 ```{r, echo=FALSE, warning=FALSE}
+library(dplyr)
 plot_histogram(train)
 relationships <- train
 relationships$chas <- NULL
@@ -188,6 +189,46 @@ There are a couple of items to note in the above graphics. First, in the boxplot
 
 
 # Data Preparation
+
+Looking at the results from our chas variable it doesn't seem to be needed here so we can remove it.  
+```{r}
+test_url <- 'https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW3/crime-evaluation-data_modified.csv'
+test <- read.csv(test_url, header=TRUE)
+trainchas <- as.factor(train$chas)
+train$chas <- NULL
+traintarget <- as.factor(train$target)
+train$target <- traintarget
+testchas <- as.factor(test$chas)
+test$chas <- NULL
+```
+##2: Indus  
+We see a lot of outliers in the indus variable, so we'll removed the rows which indus is greater than 20 and target is 0.  
+```{r}
+library('gridExtra')
+attach(train)
+p0 <- ggplot(train, aes(factor(target), indus)) + geom_boxplot()
+train <- train[-which(target==0 & indus > 20),]
+p1 <- ggplot(train, aes(factor(target), indus)) + geom_boxplot()
+grid.arrange(p0, p1,ncol=2,nrow=1)
+detach(train)
+```  
+##3: Dis  
+Dis also has some outliers so we'll remove rows where dis was greater than 11 and target was 0, and where dis was greater than 7.5 and target was 1.  
+```{r}
+attach(train)
+p0 <- ggplot(train, aes(factor(target), dis)) + geom_boxplot()
+train <- train[-which(target==0 & dis > 11),]
+train <- train[-which(target==1 & dis > 7.5),]
+p1 <- ggplot(train, aes(factor(target), dis)) + geom_boxplot()
+grid.arrange(p0, p1, ncol=2,nrow=1)
+detach(train)
+```  
+##Data Summary  
+Let's take a quick look at what variables we have remaining.  
+```{r}
+names(train)
+dim(train)
+```  
 
 # Build Models
 
