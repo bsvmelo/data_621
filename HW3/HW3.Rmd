@@ -214,11 +214,36 @@ In order to create the the backward step model we will be using the *MASS* packa
 us to pass a model which contains all of the predictors. Then the function will fit all the models which contains all but one of the predictors and
 will then pick the best model using AIC
 ```{r}
-m3 = stepAIC(m1, direction='both', trace=FALSE)
+m3 = stepAIC(m1, direction='backward', trace=FALSE)
 summary(m3)
 ```
 
-### Model 3 - Foward Step Model
+### Model 4 - Forward Step Model
+
+We can use the same stepAIC function to build the fourth model. The forward selection approach starts from the null model and adds a variable that improves the model the most, one at a time, until the stopping criterion is met. We can see the result is different compared to the backward selection approach. We can see that the result is same as the saturated model m1.
+
+```{r}
+m4 = stepAIC(m1, direction='forward', trace=FALSE)
+summary(m4)
+```
+
+### Model 5 - Stepwise step Model
+
+We also can use the same stepAIC function to build the fifth model using stepwise regression. The stepwise regression method involves adding or removing potential explanatory variables in succession and testing for statistical significance after each iteration. At the very last step stepAIC as shown in the summary table has produced the optimal set of features {*zn*, *nox*, *age*, *dis*, *rad*, *ptratio*, *medv*}. This is exactly same result as the backward step model. 
+
+```{r}
+m5 = stepAIC(m1, direction='both', trace=FALSE)
+summary(m5)
+```
+
+The analysis of deviance table shows further confirms that dropping these 4 variables  {*indus*, *chas*, *rm*, *lstat*} either in model 3 or 5 are statistically insignificant and can be dropped. 
+
+```{r}
+
+anova(m5,m1, test="Chi")
+
+```
+
 
 # Select Models
 
