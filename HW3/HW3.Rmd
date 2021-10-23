@@ -141,7 +141,7 @@ knitr::kable(table(train$target))
 plot_histogram(train)
 relationships <- train
 relationships$chas <- NULL
-plot_scatterplot(relationships, "target")
+pairs(train %>% select_if(is.numeric))
 ```
 Now that we have a basic familiarity with our data, we can analyze the relationship between the numeric variables we've brought in and the target variable. We can employ boxplots and a correlation matrix to quickly analyze this, including paired plots of the numeric feature variables. 
 
