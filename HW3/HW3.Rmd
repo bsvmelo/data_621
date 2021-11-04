@@ -59,6 +59,10 @@ if(!require('Hmisc')) (install.packages("Hmisc"))
 if(!require('DataExplorer')) (install.packages("DataExplorer"))
 if(!require('MASS')) (install.packages('MASS'))
 if(!require('alr4')) (install.packages('alr4'))
+if(!require('e1071')) (install.packages('e1071'))
+if(!require('caret')) (install.packages('caret'))
+if(!require('pROC')) (install.packages('pROC'))
+if(!require('kableExtra')) (install.packages('kableExtra'))
 ```
 
 
@@ -327,3 +331,67 @@ abline(v=2*15/length(train$target),lty=2)
 
 # Select Models
 
+we will compare various metrics for all six models. We check models’ confusion matrix, accuracy, classification error rate, precision, sensitivity, specificity, F1 score, and AUC.  
+
+```{r}
+# comparing all models using various measures
+CM1 <- confusionMatrix(as.factor(as.integer(fitted(m1) > .5)), as.factor(m1$y), positive = "1")
+CM2 <- confusionMatrix(as.factor(as.integer(fitted(m2) > .5)), as.factor(m2$y), positive = "1")
+CM3 <- confusionMatrix(as.factor(as.integer(fitted(m3) > .5)), as.factor(m3$y), positive = "1")
+CM4 <- confusionMatrix(as.factor(as.integer(fitted(m4) > .5)), as.factor(m4$y), positive = "1")
+CM5 <- confusionMatrix(as.factor(as.integer(fitted(m5) > .5)), as.factor(m5$y), positive = "1")
+CM6 <- confusionMatrix(as.factor(as.integer(fitted(m6) > .5)), as.factor(m6$y), positive = "1")
+```
+
+```{r}
+Roc1 <- roc(train$target,  predict(m1, train, interval = "prediction"))
+Roc2 <- roc(train$target,  predict(m2, train, interval = "prediction"))
+Roc3 <- roc(train$target,  predict(m3, train, interval = "prediction"))
+Roc4 <- roc(train$target,  predict(m4, train, interval = "prediction"))
+Roc5 <- roc(train$target,  predict(m5, train, interval = "prediction"))
+Roc6 <- roc(train$target,  predict(m6, train, interval = "prediction"))
+```
+
+```{r}
+metrics1 <- c(CM1$overall[1], "Class. Error Rate" = 1 - as.numeric(CM1$overall[1]), CM1$byClass[c(1, 2, 5, 7)], AUC = Roc1$auc)
+metrics2 <- c(CM2$overall[1], "Class. Error Rate" = 1 - as.numeric(CM2$overall[1]), CM2$byClass[c(1, 2, 5, 7)], AUC = Roc2$auc)
+metrics3 <- c(CM3$overall[1], "Class. Error Rate" = 1 - as.numeric(CM3$overall[1]), CM3$byClass[c(1, 2, 5, 7)], AUC = Roc3$auc)
+metrics4 <- c(CM4$overall[1], "Class. Error Rate" = 1 - as.numeric(CM4$overall[1]), CM4$byClass[c(1, 2, 5, 7)], AUC = Roc4$auc)
+metrics5 <- c(CM5$overall[1], "Class. Error Rate" = 1 - as.numeric(CM5$overall[1]), CM5$byClass[c(1, 2, 5, 7)], AUC = Roc5$auc)
+metrics6 <- c(CM6$overall[1], "Class. Error Rate" = 1 - as.numeric(CM6$overall[1]), CM6$byClass[c(1, 2, 5, 7)], AUC = Roc6$auc)
+```
+
+```{r}
+kable(cbind(metrics1, metrics2, metrics3, metrics4, metrics5, metrics6), col.names = c("Model 1", "Model 2", "Model 3", "Model 4", "Model 5", "Model 6"))  %>% 
+  kable_styling(full_width = T)
+```
+
+
+Model 6 performs the highest in all metrics except Class. Error Rate. 
+
+Model 1 and 4 perform the same. 
+
+Model 3 and 5 perform the same.
+
+Model 5 is pretty much close to all other metrics.
+
+Let's look at the roc curve to help us make the best selection.
+
+```{r}
+# plotting roc curve of model 6
+plot(roc(train$target,  predict(m6, train, interval = "prediction")), print.auc = TRUE)
+```
+
+
+```{r}
+# plotting roc curve of model 5
+plot(roc(train$target,  predict(m5, train, interval = "prediction")), print.auc = TRUE)
+```
+
+
+```{r}
+# plotting roc curve of model 4
+plot(roc(train$target,  predict(m4, train, interval = "prediction")), print.auc = TRUE)
+```
+
+It looks like Model 1 or 4 will be the best models.
