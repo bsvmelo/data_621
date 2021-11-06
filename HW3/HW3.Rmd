@@ -63,6 +63,8 @@ if(!require('e1071')) (install.packages('e1071'))
 if(!require('caret')) (install.packages('caret'))
 if(!require('pROC')) (install.packages('pROC'))
 if(!require('kableExtra')) (install.packages('kableExtra'))
+if(!require('dplyr')) (install.packages('dplyr'))
+if(!require('gridExtra')) (install.packages('gridExtra'))
 ```
 
 
@@ -125,7 +127,6 @@ print(train.cor)
 
 
 ```{r, echo=FALSE}
-library(corrgram)
 corrgram(train, order=TRUE, lower.panel=panel.shade,
   upper.panel=panel.pie, text.panel=panel.txt,
   main="visualize the data in correlation matrices ")
@@ -143,7 +144,6 @@ knitr::kable(table(train$target))
 ### Histogram of Variables
 
 ```{r, echo=FALSE, warning=FALSE}
-library(dplyr)
 plot_histogram(train)
 relationships <- train
 relationships$chas <- NULL
@@ -205,18 +205,17 @@ train$target <- traintarget
 testchas <- as.factor(test$chas)
 test$chas <- NULL
 ```
-##2: Indus  
+## Indus  
 We see a lot of outliers in the indus variable, so we'll removed the rows which indus is greater than 20 and target is 0.  
 ```{r}
-library('gridExtra')
 attach(train)
 p0 <- ggplot(train, aes(factor(target), indus)) + geom_boxplot()
 train <- train[-which(target==0 & indus > 20),]
 p1 <- ggplot(train, aes(factor(target), indus)) + geom_boxplot()
 grid.arrange(p0, p1,ncol=2,nrow=1)
 detach(train)
-```  
-##3: Dis  
+```
+## Dis  
 Dis also has some outliers so we'll remove rows where dis was greater than 11 and target was 0, and where dis was greater than 7.5 and target was 1.  
 ```{r}
 attach(train)
@@ -226,13 +225,13 @@ train <- train[-which(target==1 & dis > 7.5),]
 p1 <- ggplot(train, aes(factor(target), dis)) + geom_boxplot()
 grid.arrange(p0, p1, ncol=2,nrow=1)
 detach(train)
-```  
-##Data Summary  
+```
+## Data Summary  
 Let's take a quick look at what variables we have remaining.  
 ```{r}
 names(train)
 dim(train)
-```  
+```
 
 # Build Models
 
@@ -294,7 +293,7 @@ anova(m5,m1, test="Chi")
 
 We do a box plot for each predictors used in model m5 to check skewness. Out of the 8 predictors, these 5 predictors {*zn*, *nox*, *rad*, *tax*, *Ptratio*} are quite skewed. Thus, we shall include log of these predictors in our logistic regression model m5 or m3.
 
-```{r predictor transformation check}
+```{r predictor transformation check, echo=FALSE}
 par(mfrow=c(2,4))
 boxplot(zn~target, ylab="Zn",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
 boxplot(nox~target, ylab="Nox",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
@@ -321,7 +320,7 @@ mmps(m6, layout=c(4,4))
 
 We can further check the validity of model m6 by plotting leverage values versus standardized deviance. The average leverage is equal to (p + 1)/n = (14 + 1)/466 = 0.032. The p value here is the number of predictors from m6 including the intercept. So the usual cut-off is, 0.064, equal to twice the average leverage value. There are number of high leverage points can be seen in the figure below and can be removed at the data preparation step.
 
-```{r}
+```{r echo=FALSE}
 hvalues <- influence(m6)$hat
 stanresDeviance <- residuals(m6)/sqrt(1-hvalues)
 plot(hvalues,stanresDeviance,ylab="Standardized Deviance Residuals",xlab="Leverage Values",ylim=c(-3,4),xlim=c(-0.05,0.45))
@@ -333,7 +332,7 @@ abline(v=2*15/length(train$target),lty=2)
 
 we will compare various metrics for all six models. We check models’ confusion matrix, accuracy, classification error rate, precision, sensitivity, specificity, F1 score, and AUC.  
 
-```{r}
+```{r echo=FALSE, message=FALSE, results=FALSE}
 # comparing all models using various measures
 CM1 <- confusionMatrix(as.factor(as.integer(fitted(m1) > .5)), as.factor(m1$y), positive = "1")
 CM2 <- confusionMatrix(as.factor(as.integer(fitted(m2) > .5)), as.factor(m2$y), positive = "1")
@@ -343,7 +342,7 @@ CM5 <- confusionMatrix(as.factor(as.integer(fitted(m5) > .5)), as.factor(m5$y), 
 CM6 <- confusionMatrix(as.factor(as.integer(fitted(m6) > .5)), as.factor(m6$y), positive = "1")
 ```
 
-```{r}
+```{r echo=FALSE, message=FALSE, results=FALSE}
 Roc1 <- roc(train$target,  predict(m1, train, interval = "prediction"))
 Roc2 <- roc(train$target,  predict(m2, train, interval = "prediction"))
 Roc3 <- roc(train$target,  predict(m3, train, interval = "prediction"))
@@ -352,7 +351,7 @@ Roc5 <- roc(train$target,  predict(m5, train, interval = "prediction"))
 Roc6 <- roc(train$target,  predict(m6, train, interval = "prediction"))
 ```
 
-```{r}
+```{r echo=FALSE, message=FALSE, results=FALSE}
 metrics1 <- c(CM1$overall[1], "Class. Error Rate" = 1 - as.numeric(CM1$overall[1]), CM1$byClass[c(1, 2, 5, 7)], AUC = Roc1$auc)
 metrics2 <- c(CM2$overall[1], "Class. Error Rate" = 1 - as.numeric(CM2$overall[1]), CM2$byClass[c(1, 2, 5, 7)], AUC = Roc2$auc)
 metrics3 <- c(CM3$overall[1], "Class. Error Rate" = 1 - as.numeric(CM3$overall[1]), CM3$byClass[c(1, 2, 5, 7)], AUC = Roc3$auc)
@@ -361,7 +360,7 @@ metrics5 <- c(CM5$overall[1], "Class. Error Rate" = 1 - as.numeric(CM5$overall[1
 metrics6 <- c(CM6$overall[1], "Class. Error Rate" = 1 - as.numeric(CM6$overall[1]), CM6$byClass[c(1, 2, 5, 7)], AUC = Roc6$auc)
 ```
 
-```{r}
+```{r echo=FALSE}
 kable(cbind(metrics1, metrics2, metrics3, metrics4, metrics5, metrics6), col.names = c("Model 1", "Model 2", "Model 3", "Model 4", "Model 5", "Model 6"))  %>% 
   kable_styling(full_width = T)
 ```
@@ -377,21 +376,21 @@ Model 5 is pretty much close to all other metrics.
 
 Let's look at the roc curve to help us make the best selection.
 
-```{r}
+```{r echo=FALSE, message=FALSE}
 # plotting roc curve of model 6
-plot(roc(train$target,  predict(m6, train, interval = "prediction")), print.auc = TRUE)
+plot(roc(train$target,  predict(m6, train, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 6')
 ```
 
 
-```{r}
+```{r echo=FALSE, message=FALSE}
 # plotting roc curve of model 5
-plot(roc(train$target,  predict(m5, train, interval = "prediction")), print.auc = TRUE)
+plot(roc(train$target,  predict(m5, train, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 5')
 ```
 
 
-```{r}
+```{r echo=FALSE, message=FALSE}
 # plotting roc curve of model 4
-plot(roc(train$target,  predict(m4, train, interval = "prediction")), print.auc = TRUE)
+plot(roc(train$target,  predict(m4, train, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 1')
 ```
 
 It looks like Model 1 or 4 will be the best models.
