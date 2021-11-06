@@ -50,5 +50,15 @@ Sie Siong Wong\\
 
 \pagebreak
 
-# Introduction To The Dataset
-The dataset that we have chosen for our final project is the [Heart Failure Prediction Dataset](https://www.kaggle.com/fedesoriano/heart-failure-prediction) from Kaggle. Each row in this dataset represents a person health records like their age, sex, cholesterol levels, and etc. The dataset includes a total of 918 distinct individuals which are gathered from different countries and agencies. This dataset includes 12 different features, of categorical and/or continous values, of a individual health record including if the individual has heart disease or not. With this dataset we would like to see if we can predict if a person has heart disease and what factors can be attributed to heart disease. We will be tackling this question with the usage of different regression techniques and algorithms.
+# Introduction
+In this final project we will be using different predictive modeling techniques that we have learned throughout the course and using real world data in order to predict if a person has heart disease based on certain factors. The dataset for this final project [Heart Failure Prediction Dataset](https://www.kaggle.com/fedesoriano/heart-failure-prediction) can be found on Kaggle. Each observation in this dataset represents a person health records like their age, sex, cholesterol levels, and etc. The dataset includes a total of 918 distinct individuals which are gathered from different countries and agencies. This dataset includes 12 different features, of categorical and/or continous values, of a individual health record including if the individual has heart disease or not. With this dataset we would like to see if we can predict if a person has heart disease and see what factors can be attributed to heart disease. We will be tackling this question with the usage of different statistical analysis and regressions
+
+# Dataset
+In the dataset we have a sample of males and females from the age of 28 to 77. Each observation/row in this dataset represents a persons health records which includes their Age, Sex, ChestPainType, RestingBP, Cholesterol, FastingBS, RestingECG, MaxHR, ExerciseAngina, Oldpeak, ST_Slope, and Heart Disease Status. The dataset is a aggregate of data from Cleveland, Hungary, Switerzland, Long Beach, VA, and Stalog and in total there is 1190 different observations. The dataset also includes 272 duplicated observations which needs to be removed prior to doing any modeling work. We will also need to clean the dataset and remove any outliers in the data preperation stage. 
+
+# Method
+We will be using a mix combination of statistical analysis, feature importance selection, and logistic regression modeling and prediction in order to predict if a person has heart disease or not.
+
+
+
+# Conclusion
