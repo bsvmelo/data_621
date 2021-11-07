@@ -393,4 +393,224 @@ plot(roc(train$target,  predict(m5, train, interval = "prediction")), print.auc 
 plot(roc(train$target,  predict(m4, train, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 1')
 ```
 
-It looks like Model 1 or 4 will be the best models.
+# Appendix
+
+```{r load data echo=TRUE, eval=FALSE}
+train <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW3/crime-training-data_modified.csv", header=TRUE, sep=",")
+```
+
+```{r first 10 rows echo=TRUE, eval=FALSE}
+print(head(train, 10))
+```
+
+```{r means echo=TRUE, eval=FALSE}
+print(colMeans(train))
+```
+
+```{r standard deviation echo=TRUE, eval=FALSE}
+print(apply(train, 2, sd))
+```
+
+```{r medians echo=TRUE, eval=FALSE}
+print(apply(train, 2, median))
+```
+
+```{r boxplot echo=TRUE, eval=FALSE}
+boxplot(train, use.cols = TRUE)
+```
+
+```{r correlation matrix echo=TRUE, eval=FALSE}
+train.cor = cor(train)
+print(train.cor)
+```
+
+```{r correlation matrix chart echo=TRUE, eval=FALSE}
+corrgram(train, order=TRUE, lower.panel=panel.shade,
+  upper.panel=panel.pie, text.panel=panel.txt,
+  main="visualize the data in correlation matrices ")
+```
+
+```{r target variable frequency table echo=TRUE, eval=FALSE}
+knitr::kable(table(train$target))
+```
+
+```{r histogram echo=TRUE, eval=FALSE}
+plot_histogram(train)
+relationships <- train
+relationships$chas <- NULL
+pairs(train %>% select_if(is.numeric))
+```
+
+```{r target variable vs each predictor box plot echo=TRUE, eval=FALSE}
+#convert features to factor and add a dataset feature
+train$chas <- as.factor(train$chas)
+train$target <- as.factor(train$target)
+train$dataset <- 'train'
+plotfontsize <- 8
+train_int_names <- train %>% select_if(is.numeric)
+int_names <- names(train_int_names)
+for (i in int_names) {
+  assign(paste0("var_",i), ggplot(train, aes_string(x = train$target, y = i)) + 
+          geom_boxplot(color = 'steelblue', 
+                       outlier.color = 'firebrick', 
+                       outlier.alpha = 0.35) +
+#scale_y_continuous
+          labs(title = paste0(i,' vs target'), y = i, x= 'target') +
+          theme_minimal() + 
+          theme(
+            plot.title = element_text(hjust = 0.45),
+            panel.grid.major.y =  element_line(color = "grey", linetype = "dashed"),
+            panel.grid.major.x = element_blank(),
+            panel.grid.minor.y = element_blank(),
+            panel.grid.minor.x = element_blank(),
+            axis.ticks.x = element_line(color = "grey"),
+            text = element_text(size=plotfontsize)
+          ))
+}
+gridExtra::grid.arrange(var_age, var_dis, var_indus,var_lstat,
+                        var_medv,var_nox,var_ptratio,var_rad, 
+                        var_rm, var_tax, var_zn, nrow=4)
+numeric_values <- train %>% select_if(is.numeric)
+train_cor <- cor(numeric_values)
+corrplot.mixed(train_cor, tl.col = 'black', tl.pos = 'lt')
+```
+
+```{r chas variable removal echo=TRUE, eval=FALSE}
+test_url <- 'https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW3/crime-evaluation-data_modified.csv'
+test <- read.csv(test_url, header=TRUE)
+trainchas <- as.factor(train$chas)
+train$chas <- NULL
+traintarget <- as.factor(train$target)
+train$target <- traintarget
+testchas <- as.factor(test$chas)
+test$chas <- NULL
+```
+ 
+```{r indus variable outliers removal echo=TRUE, eval=FALSE}
+attach(train)
+p0 <- ggplot(train, aes(factor(target), indus)) + geom_boxplot()
+train <- train[-which(target==0 & indus > 20),]
+p1 <- ggplot(train, aes(factor(target), indus)) + geom_boxplot()
+grid.arrange(p0, p1,ncol=2,nrow=1)
+detach(train)
+```
+  
+```{r dis variable outliers removal echo=TRUE, eval=FALSE}
+attach(train)
+p0 <- ggplot(train, aes(factor(target), dis)) + geom_boxplot()
+train <- train[-which(target==0 & dis > 11),]
+train <- train[-which(target==1 & dis > 7.5),]
+p1 <- ggplot(train, aes(factor(target), dis)) + geom_boxplot()
+grid.arrange(p0, p1, ncol=2,nrow=1)
+detach(train)
+```
+ 
+```{r cleaned dataset summary echo=TRUE, eval=FALSE}
+names(train)
+dim(train)
+```
+
+```{r model 1 echo=TRUE, eval=FALSE}
+m1 = glm(target ~ zn + indus + nox + rm + age + dis + rad + tax + ptratio + lstat + medv, data=train, family=binomial)
+summary(m1)
+```
+
+```{r model 2 echo=TRUE, eval=FALSE}
+m2 = glm(target ~ indus + nox + age + rad + tax + ptratio + lstat + medv, data=train, family=binomial)
+summary(m2)
+```
+
+```{r model 3 echo=TRUE, eval=FALSE}
+m3 = stepAIC(m1, direction='backward', trace=FALSE)
+summary(m3)
+```
+
+```{r model 4 echo=TRUE, eval=FALSE}
+m4 = stepAIC(m1, direction='forward', trace=FALSE)
+summary(m4)
+```
+
+```{r model 5 echo=TRUE, eval=FALSE}
+m5 = stepAIC(m1, direction='both', trace=FALSE)
+summary(m5)
+```
+
+```{r anova test echo=TRUE, eval=FALSE}
+anova(m5,m1, test="Chi")
+```
+
+```{r predictor transformation check, echo=FALSE}
+par(mfrow=c(2,4))
+boxplot(zn~target, ylab="Zn",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
+boxplot(nox~target, ylab="Nox",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
+boxplot(age~target, ylab="Age",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
+boxplot(dis~target, ylab="Dis",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
+boxplot(rad~target, ylab="Rad",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
+boxplot(tax~target, ylab="Tax",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
+boxplot(ptratio~target, ylab="Ptratio",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
+boxplot(medv~target, ylab="Medv",xlab="At Risk for High Crime? (0=No, 1=Yes)", data=train)
+```
+
+```{r model 6 echo=TRUE, eval=FALSE}
+m6 = glm(target~zn+nox+age+dis+rad+tax+ptratio+medv+log(zn+1)+log(nox)+log(rad)+log(tax)+log(ptratio),family=binomial(),data=train)
+summary(m6)
+```
+
+```{r marginal model plots echo=TRUE, eval=FALSE}
+mmps(m6, layout=c(4,4))
+```
+
+```{r leverage values versus standardized deviance plot echo=TRUE, eval=FALSE}
+hvalues <- influence(m6)$hat
+stanresDeviance <- residuals(m6)/sqrt(1-hvalues)
+plot(hvalues,stanresDeviance,ylab="Standardized Deviance Residuals",xlab="Leverage Values",ylim=c(-3,4),xlim=c(-0.05,0.45))
+abline(v=2*15/length(train$target),lty=2)
+```
+
+```{r confusion matrix echo=TRUE, eval=FALSE}
+# comparing all models using various measures
+CM1 <- confusionMatrix(as.factor(as.integer(fitted(m1) > .5)), as.factor(m1$y), positive = "1")
+CM2 <- confusionMatrix(as.factor(as.integer(fitted(m2) > .5)), as.factor(m2$y), positive = "1")
+CM3 <- confusionMatrix(as.factor(as.integer(fitted(m3) > .5)), as.factor(m3$y), positive = "1")
+CM4 <- confusionMatrix(as.factor(as.integer(fitted(m4) > .5)), as.factor(m4$y), positive = "1")
+CM5 <- confusionMatrix(as.factor(as.integer(fitted(m5) > .5)), as.factor(m5$y), positive = "1")
+CM6 <- confusionMatrix(as.factor(as.integer(fitted(m6) > .5)), as.factor(m6$y), positive = "1")
+```
+
+```{r ROC curves echo=TRUE, eval=FALSE}
+Roc1 <- roc(train$target,  predict(m1, train, interval = "prediction"))
+Roc2 <- roc(train$target,  predict(m2, train, interval = "prediction"))
+Roc3 <- roc(train$target,  predict(m3, train, interval = "prediction"))
+Roc4 <- roc(train$target,  predict(m4, train, interval = "prediction"))
+Roc5 <- roc(train$target,  predict(m5, train, interval = "prediction"))
+Roc6 <- roc(train$target,  predict(m6, train, interval = "prediction"))
+```
+
+```{r metrics echo=TRUE, eval=FALSE}
+metrics1 <- c(CM1$overall[1], "Class. Error Rate" = 1 - as.numeric(CM1$overall[1]), CM1$byClass[c(1, 2, 5, 7)], AUC = Roc1$auc)
+metrics2 <- c(CM2$overall[1], "Class. Error Rate" = 1 - as.numeric(CM2$overall[1]), CM2$byClass[c(1, 2, 5, 7)], AUC = Roc2$auc)
+metrics3 <- c(CM3$overall[1], "Class. Error Rate" = 1 - as.numeric(CM3$overall[1]), CM3$byClass[c(1, 2, 5, 7)], AUC = Roc3$auc)
+metrics4 <- c(CM4$overall[1], "Class. Error Rate" = 1 - as.numeric(CM4$overall[1]), CM4$byClass[c(1, 2, 5, 7)], AUC = Roc4$auc)
+metrics5 <- c(CM5$overall[1], "Class. Error Rate" = 1 - as.numeric(CM5$overall[1]), CM5$byClass[c(1, 2, 5, 7)], AUC = Roc5$auc)
+metrics6 <- c(CM6$overall[1], "Class. Error Rate" = 1 - as.numeric(CM6$overall[1]), CM6$byClass[c(1, 2, 5, 7)], AUC = Roc6$auc)
+```
+
+```{r metrics table echo=TRUE, eval=FALSE}
+kable(cbind(metrics1, metrics2, metrics3, metrics4, metrics5, metrics6), col.names = c("Model 1", "Model 2", "Model 3", "Model 4", "Model 5", "Model 6"))  %>% 
+  kable_styling(full_width = T)
+```
+
+```{r ROC plot for model 6 echo=TRUE, eval=FALSE}
+# plotting roc curve of model 6
+plot(roc(train$target,  predict(m6, train, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 6')
+```
+
+```{r ROC plot for model 5 echo=TRUE, eval=FALSE}
+# plotting roc curve of model 5
+plot(roc(train$target,  predict(m5, train, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 5')
+```
+
+```{r ROC plot for model 4 echo=TRUE, eval=FALSE}
+# plotting roc curve of model 4
+plot(roc(train$target,  predict(m4, train, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 1')
+```
