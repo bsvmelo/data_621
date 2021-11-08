@@ -394,6 +394,19 @@ plot(roc(train$target,  predict(m5, train, interval = "prediction")), print.auc 
 plot(roc(train$target,  predict(m4, train, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 1')
 ```
 
+As we can see, the model 6 is the best model. Let's now using the evaluation dataset to evaluate the model.
+
+```{r predict evaluation dataset, echo=FALSE, message=FALSE}
+evaluation <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW3/crime-evaluation-data_modified.csv", header=TRUE, sep=",")
+evaluation$TARGET <- predict(m6, evaluation, type="response")
+evaluation$TARGET <- ifelse(evaluation$TARGET > 0.5, 1, 0)
+print(head(evaluation,10))
+```
+
+```{r export_eval_target}
+write.csv(evaluation$TARGET,paste0(getwd(),"/Evaluation_Target.csv"),row.names = FALSE)
+```
+
 # Appendix
 
 ```{r echo=TRUE, eval=FALSE}
@@ -614,4 +627,14 @@ plot(roc(train$target,  predict(m5, train, interval = "prediction")), print.auc 
 ```{r ROC plot for model 4, echo=TRUE, eval=FALSE}
 # plotting roc curve of model 4
 plot(roc(train$target,  predict(m4, train, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 1')
+```
+```{r evaluation, echo=TRUE, eval=FALSE}
+evaluation <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW3/crime-evaluation-data_modified.csv", header=TRUE, sep=",")
+evaluation$TARGET <- predict(m6, evaluation, type="response")
+evaluation$TARGET <- ifelse(evaluation$TARGET > 0.5, 1, 0)
+print(head(evaluation,10))
+```
+
+```{r export, echo=TRUE, eval=FALSE}
+write.csv(evaluation$TARGET,paste0(getwd(),"/Evaluation_Target.csv"),row.names = FALSE)
 ```
