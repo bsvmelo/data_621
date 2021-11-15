@@ -1,0 +1,145 @@
+---
+title: "DATA 621 Homework 4"
+author: "Critical Thinking Group 1"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 4
+  html_document:
+    toc: yes
+    toc_depth: '2'
+    smart: no
+  word_document:
+    toc: yes
+    toc_depth: '2'
+---
+\pagebreak
+\begin{center}
+\bigskip
+\bigskip
+\bigskip
+Prepared for:\\
+\medskip
+Prof. Dr. Nasrin Khansari\\
+\smallskip
+City University of New York, School of Professional Studies - Data 621\\
+\bigskip
+DATA 621 – Business Analytics and Data Mining\\
+\medskip
+Home Work 3\\
+\medskip
+Prepared by:\\
+\medskip
+Critical Thinking Group  1\\ 
+\medskip
+Vic Chan\\ 
+\smallskip
+Gehad Gad\\
+\smallskip
+Evan McLaughlin\\  
+\smallskip
+Bruno de Melo\\
+\smallskip
+Anjal Hussan\\
+\smallskip
+Zhouxin Shi\\
+\smallskip
+Sie Siong Wong\\
+\end{center}
+
+\pagebreak
+
+
+```{R message=FALSE, warning=FALSE, echo=FALSE}
+if (!require('ggplot2')) (install.packages('ggplot2'))
+if(!require('dplyr')) (install.packages('dplyr'))
+if(!require('tidyr')) (install.packages('tidyr'))
+if(!require('purrr')) (install.packages('purrr'))
+
+```
+
+
+\newpage
+
+# Overview
+
+In this homework assignment, you will explore, analyze and model a data set containing approximately 8000 records representing a customer at an auto insurance company. Each record has two response variables. The first response variable, TARGET_FLAG, is a 1 or a 0. A “1” means that the person was in a car crash. A zero means that the person was not in a car crash. The second response variable is TARGET_AMT. This value is zero if the person did not crash their car. But if they did crash their car, this number will be a value greater than zero.
+
+
+# Statement of the Problem
+
+The purpose of this report is to develop a binary logistic regression model to determine if the neighborhood will be at risk for high crime level.
+
+The purpose of this report is to build multiple linear regression and binary logistic regression models on the training data to predict the probability that a person will crash their car and also the amount of money it will cost if the person does crash their car. 
+
+# Data Exploration  
+
+```{r echo=FALSE}
+
+Train_Data <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW4/insurance_training_data.csv")
+
+```
+
+
+Let's take a look to the structure of our train data set
+
+
+```{r}
+str(Train_Data)
+```
+We can see that the training data has 8161 observations(rows) and  26 variables(columns).
+
+We can notice that many features that are factors are imported as characters or doubles. Also, there may be some ordinal levels within some of the factors. 
+
+
+```{r}
+#Summary of each feature
+
+summary(Train_Data) 
+```
+
+We can observe the followings:
+
+**KIDSDRIV**: Max is 4
+
+**AGE**: age is 16 is the youngest and oldest 81. There are 6 NA values
+
+**HOMEKIDS**: Max is 5
+
+**TRAVTIME**: 75% of the population is below 44 but the Max value is 142. It looks like there may be some outliers here. 
+
+**TIF**: The majority of people are not long time customers
+
+**CLM_FREQ**: Maximum is over 5 years
+
+**MVR_PTS**: 75% have 3 or less, maximum is 13
+
+**CAR_AGE**: Strange!. The minimum -3 and Max is 28. There are 510 NA values.
+
+
+##Missing Values
+
+```{r}
+#missing values by column
+colSums(is.na(Train_Data)) 
+```
+
+There are missing values in AGE (6), YOJ(454), and CAR_AGE(510).
+
+
+```{r}
+
+Train_Data1<-select_if(Train_Data, is.numeric)
+Train_Data1 %>%
+  keep(is.numeric) %>%                     
+  gather() %>%                            
+  ggplot(aes(value)) +                     
+    facet_wrap(~ key, scales = "free") +  
+    geom_density()  
+```
+
+
+
+
+
