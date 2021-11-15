@@ -125,11 +125,10 @@ We can observe the followings:
 colSums(is.na(Train_Data)) 
 ```
 
-There are missing values in AGE (6), YOJ(454), and CAR_AGE(510).
+There are missing values in AGE (6), YOJ(454), and CAR_AGE(510)..
 
 
 ```{r}
-
 Train_Data1<-select_if(Train_Data, is.numeric)
 Train_Data1 %>%
   keep(is.numeric) %>%                     
