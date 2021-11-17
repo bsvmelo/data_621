@@ -51,11 +51,13 @@ Sie Siong Wong\\
 \pagebreak
 
 
-```{R message=FALSE, warning=FALSE, echo=FALSE}
+```{r message=FALSE, warning=FALSE, echo=FALSE}
 if (!require('ggplot2')) (install.packages('ggplot2'))
 if(!require('dplyr')) (install.packages('dplyr'))
 if(!require('tidyr')) (install.packages('tidyr'))
 if(!require('purrr')) (install.packages('purrr'))
+if(!require('DataExplorer')) (install.packages('DataExplorer'))
+library(DataExplorer)
 
 ```
 
@@ -64,12 +66,10 @@ if(!require('purrr')) (install.packages('purrr'))
 
 # Overview
 
-In this homework assignment, you will explore, analyze and model a data set containing approximately 8000 records representing a customer at an auto insurance company. Each record has two response variables. The first response variable, TARGET_FLAG, is a 1 or a 0. A “1” means that the person was in a car crash. A zero means that the person was not in a car crash. The second response variable is TARGET_AMT. This value is zero if the person did not crash their car. But if they did crash their car, this number will be a value greater than zero.
+In this homework assignment, we will explore, analyze and model a data set containing approximately 8000 records representing a customer at an auto insurance company. Each record has two response variables. The first response variable, TARGET_FLAG, is a 1 or a 0. A “1” means that the person was in a car crash. A zero means that the person was not in a car crash. The second response variable is TARGET_AMT. This value is zero if the person did not crash their car. But if they did crash their car, this number will be a value greater than zero.
 
 
 # Statement of the Problem
-
-The purpose of this report is to develop a binary logistic regression model to determine if the neighborhood will be at risk for high crime level.
 
 The purpose of this report is to build multiple linear regression and binary logistic regression models on the training data to predict the probability that a person will crash their car and also the amount of money it will cost if the person does crash their car. 
 
@@ -78,22 +78,23 @@ The purpose of this report is to build multiple linear regression and binary log
 ```{r echo=FALSE}
 
 Train_Data <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW4/insurance_training_data.csv")
-
+Eval_Data <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW4/insurance-evaluation-data.csv")
 ```
 
 
-Let's take a look to the structure of our train data set
+Let's take a look in the structure of our train data set - excluding the first column **index** which it is not to be used.
 
 
-```{r}
+```{r echo=FALSE}
+Train_Data <- Train_Data[,-1]
 str(Train_Data)
 ```
-We can see that the training data has 8161 observations(rows) and  26 variables(columns).
+We can see that the training data has 8161 observations(rows) and 25 variables (columns). Of these 25 columns, many are of factors type but were imported as characters or doubles - there will be properly converted in the preparation section. Also, there may be some ordinal levels within some of the factors. 
 
-We can notice that many features that are factors are imported as characters or doubles. Also, there may be some ordinal levels within some of the factors. 
+Below we display a summary of each feature.
 
 
-```{r}
+```{r echo=FALSE}
 #Summary of each feature
 
 summary(Train_Data) 
@@ -115,20 +116,53 @@ We can observe the followings:
 
 **MVR_PTS**: 75% have 3 or less, maximum is 13
 
-**CAR_AGE**: Strange!. The minimum -3 and Max is 28. There are 510 NA values.
+**CAR_AGE**: Strange!. The minimum -3 and Max is 28. There are 510 NA values. These negative values will have to be excluded from the analysis.
 
+**INCOME** - **BLUEBOOK** - **HOME_VAL** - **OLDCLAIM** : These are numerical variables that need to be converted accordingly.
+
+
+##Convertion to numerical
+
+As can be seen below, these four features are now corrected represented.
+
+```{r echo=FALSE}
+Train_Data$INCOME <- gsub(",","",(Train_Data$INCOME))
+Train_Data$INCOME <- sub('.', '', Train_Data$INCOME)
+Train_Data$INCOME <-trimws(Train_Data$INCOME, which = c("both"), whitespace = "[ \t\r\n]")
+Train_Data$INCOME <- as.numeric(Train_Data$INCOME)
+
+Train_Data$HOME_VAL <- gsub(",","",(Train_Data$HOME_VAL))
+Train_Data$HOME_VAL <- sub('.', '', Train_Data$HOME_VAL)
+Train_Data$HOME_VAL <-trimws(Train_Data$HOME_VAL, which = c("both"), whitespace = "[ \t\r\n]")
+Train_Data$HOME_VAL <- as.numeric(Train_Data$HOME_VAL)
+# 
+Train_Data$BLUEBOOK <- gsub(",","",(Train_Data$BLUEBOOK))
+Train_Data$BLUEBOOK <- sub('.', '', Train_Data$BLUEBOOK)
+Train_Data$BLUEBOOK <-trimws(Train_Data$BLUEBOOK, which = c("both"), whitespace = "[ \t\r\n]")
+Train_Data$BLUEBOOK <- as.numeric(Train_Data$BLUEBOOK)
+# 
+Train_Data$OLDCLAIM <- gsub(",","",(Train_Data$OLDCLAIM))
+Train_Data$OLDCLAIM <- sub('.', '', Train_Data$OLDCLAIM)
+Train_Data$OLDCLAIM <-trimws(Train_Data$OLDCLAIM, which = c("both"), whitespace = "[ \t\r\n]")
+Train_Data$OLDCLAIM <- as.numeric(Train_Data$OLDCLAIM)
+# 
+summary(Train_Data[,c(7,9,16,20)])
+```
 
 ##Missing Values
 
-```{r}
+```{r echo=FALSE}
 #missing values by column
 colSums(is.na(Train_Data)) 
 ```
 
-There are missing values in AGE (6), YOJ(454), and CAR_AGE(510)..
+There are missing values in several variables for a total of 1,879 NA's or about 1% of the total dataset.
 
+##Univariate Distribution - Histograms
 
-```{r}
+Below the numeric feature distributions are displayed.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
 Train_Data1<-select_if(Train_Data, is.numeric)
 Train_Data1 %>%
   keep(is.numeric) %>%                     
@@ -136,9 +170,30 @@ Train_Data1 %>%
   ggplot(aes(value)) +                     
     facet_wrap(~ key, scales = "free") +  
     geom_density()  
+
+```
+We can see that AGE, BLUEBOOK, CAR_AGE, HOME_VAL, INCOME, TRAVTIME and YOJ resemblance somewhat a normal distribution while CLM_FREQ, HOMEKIDS, KIDSDRIV, MVR_PTS, OLDCLAIM, TARGET_AMT, TIF resemblance either a binomial or Poisson distribution.
+
+Some of the variables present a lot of zeros which could be explained as lack of data, and as such should be excluded, for example in HOMEVAL, while in others they are a rightful part of the distribution, and should be considered in the analysis, such as in INCOME, CLM_FREQ, HOMEKIDS, KIDSDRV, MVR_PTS,  OLDCLAIM, etc.
+
+
+For the categorical features, we will displayed their distribution using bar charts.
+
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+Train_Data %>% select(!is.numeric) %>%
+  gather() %>%                            
+  ggplot(aes(value)) +                     
+    facet_wrap(~ key, scales = "free") +  
+   geom_bar() + coord_flip()  
 ```
 
+### Correlation matrix
 
-
-
+```{r, echo=FALSE}
+plot_correlation(Train_Data)
+```
+```{r, echo=FALSE}
+pairs(Train_Data1 %>% select_if(is.numeric))
+```
 
