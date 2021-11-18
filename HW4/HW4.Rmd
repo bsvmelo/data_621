@@ -56,6 +56,7 @@ if (!require('ggplot2')) (install.packages('ggplot2'))
 if(!require('dplyr')) (install.packages('dplyr'))
 if(!require('tidyr')) (install.packages('tidyr'))
 if(!require('purrr')) (install.packages('purrr'))
+if(!require('mice')) (install.packages('mice'))
 if(!require('DataExplorer')) (install.packages('DataExplorer'))
 library(DataExplorer)
 
@@ -196,4 +197,47 @@ plot_correlation(Train_Data)
 ```{r, echo=FALSE}
 pairs(Train_Data1 %>% select_if(is.numeric))
 ```
-
+# 2. DATA PREPARATION  
+## Adjusting Variables  
+Looking at the plots we see we have to make a few changes to some variables. We'll make HOMEKIDS boolean instead of a factor. For the rows where CAR_AGE are labled numbers, we make 0. For blank JOBS we label those as "Unknown". Finally, change Education to 1 if PhD and Masters.
+```{r Homekids}
+Train_Data$HOMEKIDS[Train_Data$HOMEKIDS != 0 ] <- 1
+Eval_Data$HOMEKIDS[Eval_Data$HOMEKIDS != 0 ] <- 1
+```  
+```{r CarAge}
+Train_Data$CAR_AGE[Train_Data$CAR_AGE < 0 ] <- 0
+Eval_Data$CAR_AGE[Eval_Data$CAR_AGE < 0 ] <- 0
+```  
+```{r JOB}
+Train_Data$JOB <- as.character(Train_Data$JOB)
+Train_Data$JOB[Train_Data$JOB == ""] <- "Unknown"
+Train_Data$JOB <- as.factor(Train_Data$JOB)
+Eval_Data$JOB <- as.character(Eval_Data$JOB)
+Eval_Data$JOB[Eval_Data$JOB == ""] <- "Unknown"
+Eval_Data$JOB <- as.factor(Eval_Data$JOB)
+```
+```{r Education}
+Train_Data$EDUCATION <- ifelse(Train_Data$EDUCATION %in% c("PhD", "Masters"), 0, 1)
+```
+## Missing Data  
+We have missing data in income, yoj, home_val, and car_age. 
+```{r}
+summary(Train_Data)
+plot_missing(Train_Data)
+```  
+## Imputate  
+Let's runmice imputation on both the train and eval_data set.  
+```{r}
+mice_imputes <- mice(Train_Data, m = 2, maxit = 2, print = FALSE)
+densityplot(mice_imputes)  
+```  
+```{r}
+m_train <- median(Train_Data$AGE, na.rm = T)
+Train_Data$AGE[is.na(Train_Data$AGE)] <- m_train
+m_test <- median(Train_Data$AGE, na.rm = T)
+Train_Data$AGE[is.na(Train_Data$AGE)] <- m_test
+mice_train <-  mice(Train_Data, m = 1, maxit = 1, print = FALSE)
+Train_Data <- complete(mice_train)
+mice_test <- mice(Eval_Data, m = 1, maxit = 1, print = FALSE)
+Eval_Data <- complete(mice_test)
+```  
