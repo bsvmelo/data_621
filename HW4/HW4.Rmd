@@ -241,3 +241,37 @@ Train_Data <- complete(mice_train)
 mice_test <- mice(Eval_Data, m = 1, maxit = 1, print = FALSE)
 Eval_Data <- complete(mice_test)
 ```  
+## Building Models
+```{r}
+Train_Data$TARGET_AMT <- NULL
+split <- caret::createDataPartition(Train_Data$TARGET_FLAG, p=0.85, list=FALSE)
+Cut_Train <- Train_Data[split, ]
+Val_Check <- Train_Data[ -split, ]
+```
+
+### Model #1
+Our first model will seek to create a baseline using binary response variable, using a logistic regression model that contains all of our features. 
+```{r}
+Binary1 <- glm(TARGET_FLAG~., family=binomial, data=Cut_Train)
+summary(Binary1)
+```
+The AIC result from the binomial model can be derived using the logit link function. 
+
+### Model #2
+This model will be derived using a stepwise approach to determine which is more significant. We also attempt to identify impacts from multicollinearity.
+
+```{r}
+Binar_step <- step(Binary1)
+summary(Binary_step)
+```
+Judging by AIC, the stepwise approach reduces the dimensionality and improves fit, given its lower estimated prediction error. This suggests that, in addition to being a simple model, the stepwise method works better to create an overall better fit to the data.  
+
+### Model #3
+Another method for binary modeling includes a random forest model that uses the same set of variables from the previous two models.
+
+```{r}
+RF <- randomForest::randomForest(TARGET_FLAG~., data=Cut_Train)
+```
+
+We next ran some multivariate regression models, using the features to predict the numeric response variable, TARGET_AMT, which gives the costs associated with a car's accident, creating a multiple linear regression model to predict the response variable.
+
