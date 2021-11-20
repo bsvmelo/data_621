@@ -240,6 +240,9 @@ m_train <- median(Train_Data$AGE, na.rm = T)
 Train_Data$AGE[is.na(Train_Data$AGE)] <- m_train
 m_test <- median(Train_Data$AGE, na.rm = T)
 Train_Data$AGE[is.na(Train_Data$AGE)] <- m_test
+
+impute_train_data <- mice(Train_Data, m=5, maxit=20, method='pmm', seed=321)
+complete_train_data <- complete(impute_train_data,2)
 ```
 
 ## Building Models
@@ -265,40 +268,62 @@ Judging by AIC, the stepwise approach reduces the dimensionality and improves fi
 Another method for binary modeling includes a random forest model that uses the same set of variables from the previous two models.
 
 ```{r}
-RF <- randomForest::randomForest(TARGET_FLAG~., data=Cut_Train)
+RF <- randomForest::randomForest(TARGET_FLAG~., data=Train_Data)
 ```
 
 We next ran some multivariate regression models, using the features to predict the numeric response variable, TARGET_AMT, which gives the costs associated with a car's accident, creating a multiple linear regression model to predict the response variable.
 
-### Model #4
+### Model #4 - All Variables
+
+For the multi linear regression we want to know what is going to be the insurance cost if a person has crashed their car. We are going to build a multi linear regression model which includes all the data, from there we will keep the variables that have significance and use that to build subsequence models. We will first need to create a dataset specifically for a multi linear regression as we only care about if a customer has crashed their car. 
 
 ```{r}
-Train_MV <- Train_Data[Train_Data$TARGET_FLAG == 1,]
-Train_Data$TARGET_FLAG <- NULL
-Split_MV <- caret::createDataPartition(Train_MV$TARGET_AMT, p=0.85, list = F)
-Cut_Train_MV <- Train_MV[Split_MV, ]
-Val_Check_MV <- Train_MV[ -Split_MV, ]
-
-MV_1 <- train(Train_MV$TARGET_FLAG ~., data = Cut_Train_MV, method = "lm",
-                 trControl = trainControl(method = "cv", number = 10,
-                                                     savePredictions = TRUE),
-                tuneLength = 5, preProcess = c("center", "scale"))
-summary(MV_1)
-
+mlr_data = complete_train_data %>%
+  filter(TARGET_FLAG == 1) %>%
+  dplyr::select(-1)
 ```
-The R2 shows that the model is not a significant fit to the data, but we can try to enhance it for Model #5 using the stepwise technique again. 
 
-### Model #5
-
-Using Model 4 as a starting point, here we describe the results of a backwards stepwise by AIC multiple linear regression model selection process.
 ```{r}
-MV_2 <- lm(TARGET_AMT ~ ., data = Cut_Train_MV)
-MV2_step <- stepAIC(MV_2, trace = F)
-
-summary(MV2_step)
-
+mlr1 = lm(TARGET_AMT ~ ., data = mlr_data)
+summary(mlr1)
 ```
-While the R2 figure still demonstrates limited value in the model, we've achieved a p-value that could be considered significant. Nevertheless, the multivariate models haven't demonstrated much value, all in all. 
+
+```{r}
+par(mfrow=c(2,2))
+plot(mlr1)
+```
+
+Looking at the plot above we can see that the Residual vs Fitted graph has a large variance for a couple of outliers while a majority of the points have very low residuals. Also looking at the Normal Q-Q graph we can see that it is not a normal distribution. This is quite good for a model which utilizes all of the variables and we would like to see if we can improve the model by selecting variables that are significant.
+
+Some variables that we would like to use for the next model are **KIDSDRIV**, **SEX**, **CAR_USE**, **REVOKED**, and **CAR_AGE**. These variables makes a lot of are usually thought of as the variables which can increase the cost of insurance
+
+### Model #5 - Hand Picking Variables
+
+```{r}
+mlr2 = lm(TARGET_AMT ~ KIDSDRIV + SEX + CAR_USE + REVOKED + CAR_AGE, data=mlr_data)
+summary(mlr2)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(mlr2)
+```
+
+With the second model we can see that we have a lower R Squared value in our new model compared to the first model which included all the variables. We can also see that there is still a large variance with the Residual vs Fitted plot. We will next try to use a stepwise function to find the best model from all the variables.
+
+### Model #6 - Stepwise Function
+
+```{r}
+mlr3 = stepAIC(mlr1, direction='backward', trace=FALSE)
+summary(mlr3)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(mlr3)
+```
+
+Using the backward step function we can see that the model choose **MSTATUS**, **SEX**, **BLUEBOOK**, **REVOKED**, and **MVR_PTS**. Looking at the residual vs fitted plot we still see a variance caused by outliers.
 
 # Model Selection
 
