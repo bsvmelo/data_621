@@ -275,3 +275,34 @@ RF <- randomForest::randomForest(TARGET_FLAG~., data=Cut_Train)
 
 We next ran some multivariate regression models, using the features to predict the numeric response variable, TARGET_AMT, which gives the costs associated with a car's accident, creating a multiple linear regression model to predict the response variable.
 
+### Model #4
+
+```{r}
+Train_MV <- Train_Data [Train_Data$TARGET_FLAG == 1, ]
+Train_Data$TARGET_FLAG <- NULL
+Split_MV <- caret::createDataPartition(Train_MV$TARGET_AMT, p=0.85, list = F)
+Cut_Train_MV <- Train_MV[Split_MV, ]
+Val_Check_MV <- Train_MV[ -Split_MV, ]
+
+MV_1 <- train(Train_MV$TARGET_FLAG ~., data = Cut_Train_MV, method = "lm",
+                 trControl = trainControl(method = "cv", number = 10,
+                                                     savePredictions = TRUE),
+                tuneLength = 5, preProcess = c("center", "scale"))
+summary(MV1)
+
+```
+The R2 shows that the model is not a significant fit to the data, but we can try to enhance it for Model #5 using the stepwise technique again. 
+
+### Model #5
+
+Using Model 4 as a starting point, here we describe the results of a backwards stepwise by AIC multiple linear regression model selection process.
+```{r}
+MV_2 <- lm(TARGET_AMT ~ ., data = Cut_Train_MV)
+MV2_step <- stepAIC(MV_2, trace = F)
+
+summary(MV2_step)
+
+```
+While the R2 figure still demonstrates limited value in the model, we've achieved a p-value that could be considered significant. Nevertheless, the multivariate models haven't demonstrated much value, all in all. 
+
+
