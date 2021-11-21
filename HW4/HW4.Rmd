@@ -350,6 +350,7 @@ summary(mlr3)
 ```{r}
 par(mfrow=c(2,2))
 plot(mlr3)
+```
 
 Using the backward step function we can see that the model choose **MSTATUS**, **SEX**, **BLUEBOOK**, **REVOKED**, and **MVR_PTS**. Looking at the residual vs fitted plot we still see a variance caused by outliers.
 
