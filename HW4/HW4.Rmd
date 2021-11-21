@@ -62,6 +62,9 @@ if(!require('MASS')) (install.packages('MASS'))
 if(!require('caret')) (install.packages('caret'))
 if(!require('stats')) (install.packages('stats'))
 if(!require('randomForest')) (install.packages('randomForest'))
+if(!require('pROC')) (install.packages('pROC'))
+if(!require('kableExtra')) (install.packages('kableExtra'))
+if(!require('gridExtra')) (install.packages('gridExtra'))
 ```
 
 
@@ -163,7 +166,7 @@ There are missing values in several variables for a total of 1,879 NA's or about
 Below the numeric feature distributions are displayed.
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
-Train_Data1<-select_if(Train_Data, is.numeric)
+Train_Data1<-dplyr::select_if(Train_Data, is.numeric)
 Train_Data1 %>%
   keep(is.numeric) %>%                     
   tidyr::gather() %>%                            
@@ -180,7 +183,7 @@ For the categorical features, we will displayed their distribution using bar cha
 
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
-Train_Data %>% select(!is.numeric) %>%
+Train_Data %>% dplyr::select(!is.numeric) %>%
   tidyr::gather() %>%                            
   ggplot(aes(value)) +                     
     facet_wrap(~ key, scales = "free") +  
@@ -199,7 +202,7 @@ pairs(Train_Data1 %>% select_if(is.numeric))
 
 ## Adjusting Variables
 
-Looking at the plots we see we have to make a few changes to some variables. We'll make HOMEKIDS boolean instead of a factor. For the rows where CAR_AGE are labled numbers, we make 0. For blank JOBS we label those as "Unknown". Finally, change Education to 1 if PhD and Masters.
+Looking at the plots we see we have to make a few changes to some variables. We'll make HOMEKIDS boolean instead of a factor. For the rows where CAR_AGE are labeled numbers, we make 0. For blank JOBS we label those as "Unknown". Finally, change Education to 1 if PhD and Masters.
 
 ```{r Homekids}
 Train_Data$HOMEKIDS[Train_Data$HOMEKIDS != 0 ] <- 1
@@ -254,18 +257,20 @@ summary(m1b)
 ```
 The AIC result from the binomial model can be derived using the logit link function. 
 
-### Model 2 - Backward Step Model
+### Model 2 - Hand Pick Model
 
-We will now build a model using backwards selection in order to compare if using backwards selection is better than hand picking values to create a model
+We can see that from saturated model above that variables *AGE*, *YOJ*, *PARENT1*, *SEX*, *EDUCATION*, *JOB*, and *RED_CAR* have p values greater than 0.05. These variables will be dropped to build the next model.
 
-In order to create the the backward step model we will be using the *MASS* package which includes the *stepAIC* function. The backward step requires us to pass a model which contains all of the predictors. Then the function will fit all the models which contains all but one of the predictors and will then pick the best model using AIC
+Also, we see some predictors are skewed and so we take log of them to build model 2.
 
 ```{r}
-m2b <- stepAIC(m1b, direction='backward', trace=FALSE)
+m2b <- glm(factor(TARGET_FLAG) ~ KIDSDRIV+HOMEKIDS+log(INCOME+1)+log(HOME_VAL+1)+MSTATUS+log(TRAVTIME)+CAR_USE+log(BLUEBOOK)+TIF	+CAR_TYPE+log(OLDCLAIM+1)+CLM_FREQ+REVOKED+MVR_PTS +log(CAR_AGE+1)+URBANICITY, family=binomial, data=subset(complete_train_data, select=-c(TARGET_AMT)))
 summary(m2b)
 ```
 
 ### Model 3 - Forward Step Model
+
+We will now build a model using forward selection in order to compare if using forward selection is better than hand picking values to create a model.
 
 We can use the same stepAIC function to build the third model. The forward selection approach starts from the null model and adds a variable that improves the model the most, one at a time, until the stopping criterion is met. We can see the result is different compared to the backward selection approach. The AIC is a little higher.
 
@@ -283,13 +288,13 @@ m4b <- stepAIC(m1b, direction='both', trace=FALSE)
 summary(m4b)
 ```
 
-The analysis of deviance table shows further confirms that dropping these statistical insignificant variables  {*AGE*, *SEC*, *EDUCATION*, *RED_CAR*} either in model 2 or 4.
+Judging by AIC, the stepwise approach reduces the dimensionality and improves fit, given its lower estimated prediction error. This suggests that, in addition to being a simple model, the stepwise method works better to create an overall better fit to the data.
+
+The analysis of deviance table shows further confirms that dropping these statistical insignificant variables  {*AGE*, *SEX*, *EDUCATION*, *RED_CAR*} in model 4.
 
 ```{r}
 anova(m4b,m1b, test="Chi")
 ```
-
-Judging by AIC, the stepwise or backward approach reduces the dimensionality and improves fit, given its lower estimated prediction error. This suggests that, in addition to being a simple model, the stepwise or backward method works better to create an overall better fit to the data.
 
 We next ran some multivariate regression models, using the features to predict the numeric response variable, TARGET_AMT, which gives the costs associated with a car's accident, creating a multiple linear regression model to predict the response variable.
 
@@ -320,6 +325,50 @@ summary(MV2_step)
 While the R2 figure still demonstrates limited value in the model, we've achieved a p-value that could be considered significant. Nevertheless, the multivariate models haven't demonstrated much value, all in all. 
 
 # Model Selection
+
+## Logistic Regression
+
+we will compare various metrics for all 4 models. We check models’ confusion matrix, accuracy, classification error rate, precision, sensitivity, specificity, F1 score, AUC, and ROC curves.
+
+First, let's plot the ROC curves for all 4 models and then calculate the various metrics.
+
+```{r echo=FALSE, message=FALSE}
+par(mfrow=c(2,2))
+plot(roc(complete_train_data$TARGET_FLAG,  predict(m1b, complete_train_data, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 1')
+plot(roc(complete_train_data$TARGET_FLAG,  predict(m2b, complete_train_data, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 2')
+plot(roc(complete_train_data$TARGET_FLAG,  predict(m3b, complete_train_data, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 3')
+plot(roc(complete_train_data$TARGET_FLAG,  predict(m4b, complete_train_data, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 4')
+```
+
+```{r echo=FALSE, message=FALSE, results=FALSE}
+# comparing all models using various measures
+CM1 <- confusionMatrix(as.factor(as.integer(fitted(m1b) > .5)), as.factor(m1b$y), positive = "1")
+CM2 <- confusionMatrix(as.factor(as.integer(fitted(m2b) > .5)), as.factor(m2b$y), positive = "1")
+CM3 <- confusionMatrix(as.factor(as.integer(fitted(m3b) > .5)), as.factor(m3b$y), positive = "1")
+CM4 <- confusionMatrix(as.factor(as.integer(fitted(m4b) > .5)), as.factor(m4b$y), positive = "1")
+```
+
+```{r echo=FALSE, message=FALSE, results=FALSE}
+Roc1 <- roc(complete_train_data$TARGET_FLAG,  predict(m1b, complete_train_data, interval = "prediction"))
+Roc2 <- roc(complete_train_data$TARGET_FLAG,  predict(m2b, complete_train_data, interval = "prediction"))
+Roc3 <- roc(complete_train_data$TARGET_FLAG,  predict(m3b, complete_train_data, interval = "prediction"))
+Roc4 <- roc(complete_train_data$TARGET_FLAG,  predict(m4b, complete_train_data, interval = "prediction"))
+```
+
+```{r echo=FALSE, message=FALSE, results=FALSE}
+metrics1 <- c(CM1$overall[1], "Class. Error Rate" = 1 - as.numeric(CM1$overall[1]), CM1$byClass[c(1, 2, 5, 7)], AUC = Roc1$auc)
+metrics2 <- c(CM2$overall[1], "Class. Error Rate" = 1 - as.numeric(CM2$overall[1]), CM2$byClass[c(1, 2, 5, 7)], AUC = Roc2$auc)
+metrics3 <- c(CM3$overall[1], "Class. Error Rate" = 1 - as.numeric(CM3$overall[1]), CM3$byClass[c(1, 2, 5, 7)], AUC = Roc3$auc)
+metrics4 <- c(CM4$overall[1], "Class. Error Rate" = 1 - as.numeric(CM4$overall[1]), CM4$byClass[c(1, 2, 5, 7)], AUC = Roc4$auc)
+```
+
+```{r echo=FALSE}
+kable(cbind(metrics1, metrics2, metrics3, metrics4), col.names = c("Model 1", "Model 2", "Model 3", "Model 4"))  %>% 
+  kable_styling(full_width = T)
+```
+
+By looking at the ROC curves, model 1, 3, and 4 are showing the same area under curve value. So, it's hard to justify which model is the best. Fortunately, we have the various calculated metrics to provide us more details which model is the best. Based on that, we can say that the model 4 performs the highest in all metrics except Class. Error Rate. 
+
 
 ## Multi Linear Regression
 We will be looking at all the models created and looking at the metrics like R Squared Value, RMSE, F-Statistics, and Residual Plots in order to determine which is the best model which represents our data. We will then compare the best model selected against the evaluation data set in order to see if the model truly represents the dataset
