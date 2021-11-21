@@ -95,7 +95,6 @@ Let's take a look in the structure of our train data set - excluding the first c
 ```{r echo=FALSE}
 Train_Data <- Train_Data[,-1]
 str(Train_Data)
-
 Eval_Data <- Eval_Data[,-1]
 ```
 We can see that the training data has 8161 observations(rows) and 25 variables (columns). Of these 25 columns, many are of factors type but were imported as characters or doubles - there will be properly converted in the preparation section. Also, there may be some ordinal levels within some of the factors.
@@ -137,7 +136,6 @@ Train_Data$INCOME <- gsub(",","",(Train_Data$INCOME))
 Train_Data$INCOME <- sub('.', '', Train_Data$INCOME)
 Train_Data$INCOME <-trimws(Train_Data$INCOME, which = c("both"), whitespace = "[ \t\r\n]")
 Train_Data$INCOME <- as.numeric(Train_Data$INCOME)
-
 Train_Data$HOME_VAL <- gsub(",","",(Train_Data$HOME_VAL))
 Train_Data$HOME_VAL <- sub('.', '', Train_Data$HOME_VAL)
 Train_Data$HOME_VAL <-trimws(Train_Data$HOME_VAL, which = c("both"), whitespace = "[ \t\r\n]")
@@ -157,7 +155,6 @@ Eval_Data$INCOME <- gsub(",","",(Eval_Data$INCOME))
 Eval_Data$INCOME <- sub('.', '', Eval_Data$INCOME)
 Eval_Data$INCOME <-trimws(Eval_Data$INCOME, which = c("both"), whitespace = "[ \t\r\n]")
 Eval_Data$INCOME <- as.numeric(Eval_Data$INCOME)
-
 Eval_Data$HOME_VAL <- gsub(",","",(Eval_Data$HOME_VAL))
 Eval_Data$HOME_VAL <- sub('.', '', Eval_Data$HOME_VAL)
 Eval_Data$HOME_VAL <-trimws(Eval_Data$HOME_VAL, which = c("both"), whitespace = "[ \t\r\n]")
@@ -173,7 +170,6 @@ Eval_Data$OLDCLAIM <- sub('.', '', Eval_Data$OLDCLAIM)
 Eval_Data$OLDCLAIM <-trimws(Eval_Data$OLDCLAIM, which = c("both"), whitespace = "[ \t\r\n]")
 Eval_Data$OLDCLAIM <- as.numeric(Eval_Data$OLDCLAIM)
 #
-
 summary(Train_Data[,c(7,9,16,20)])
 ```
 
@@ -309,13 +305,16 @@ Procedures described above were also applied to the evaluation set.
 
 # Data Prep
 
-## Adjusting Variables
-
-Looking at the plots we see we have to make a few changes to some variables. We'll make HOMEKIDS boolean instead of a factor. For the rows where CAR_AGE are labeled numbers, we make 0. For blank JOBS we label those as "Unknown". Finally, change Education to 1 if PhD and Masters.
+Looking at the plots we see we have to make a few changes to some variables. We'll make HOMEKIDS boolean instead of a factor. For the rows where AGE and CAR_AGE are less than zero, we make them equal to 0. For blank JOBS we label those as "Unknown". Finally, change Education to 1 if PhD and Masters.
 
 ```{r Homekids, echo=FALSE}
 Train_Data$HOMEKIDS[Train_Data$HOMEKIDS != 0 ] <- 1
 Eval_Data$HOMEKIDS[Eval_Data$HOMEKIDS != 0 ] <- 1
+```
+
+```{r Age, echo=FALSE}
+Train_Data$CAR_AGE[Train_Data$AGE < 0 ] <- 0
+Eval_Data$CAR_AGE[Eval_Data$AGE < 0 ] <- 0
 ```
 
 ```{r CarAge, echo=FALSE}
@@ -334,7 +333,9 @@ Eval_Data$JOB <- as.factor(Eval_Data$JOB)
 
 ```{r Education, echo=FALSE}
 Train_Data$EDUCATION <- ifelse(Train_Data$EDUCATION %in% c("PhD", "Masters"), 0, 1)
+Eval_Data$EDUCATION <- ifelse(Eval_Data$EDUCATION %in% c("PhD", "Masters"), 0, 1)
 ```
+
 
 ## Missing Data
 
@@ -350,6 +351,9 @@ We assume the missing data are Missing at Random and choose to impute. The reaso
 impute_train_data <- mice(Train_Data, m=5, maxit=20, method='pmm', seed=321, print = FALSE)
 densityplot(impute_train_data) 
 complete_train_data <- complete(impute_train_data,2)
+impute_eval_data <- mice(Eval_Data, m=5, maxit=20, method='pmm', seed=321, print = FALSE)
+densityplot(impute_eval_data) 
+complete_eval_data <- complete(impute_eval_data,2)
 ```
 
 # Building Models
@@ -549,25 +553,22 @@ Based on the table above the the best model would be model 3 based on the summar
 
 ## Predictions
 
+## Predictions
+
 Logistics Model:
 ```{r}
-Eval_Data$BLUEBOOK = as.numeric(Eval_Data$BLUEBOOK)
-Eval_Data$INCOME = as.numeric(Eval_Data$INCOME)
-Eval_Data$HOME_VAL = as.numeric(Eval_Data$HOME_VAL)
-Eval_Data$OLDCLAIM = as.numeric(Eval_Data$OLDCLAIM)
-Eval_Data$TARGET_AMT = NULL
-
-Eval_Data$INDEX = NULL
-prediction_binary = predict(m4b, Eval_Data, type="response")
-Eval_Data$TARGET_FLAG = prediction_binary
-Eval_Data$TARGET_FLAG <- ifelse(Eval_Data$TARGET_FLAG > 0.5, 1, 0)
+prediction_binary = predict(m4b, complete_eval_data, type="response")
+complete_eval_data$TARGET_FLAG = prediction_binary
+complete_eval_data$TARGET_FLAG <- ifelse(complete_eval_data$TARGET_FLAG > 0.5, 1, 0)
+print(head(complete_eval_data,10))
 ```
 
 Multi Linear Model:
 ```{r}
-prediction_linear = predict(mlr3, Eval_Data)
-Eval_Data$TARGET_AMT = prediction_linear
-write.csv(Eval_Data, 'predictions.csv')
+prediction_linear = predict(mlr3, complete_eval_data)
+complete_eval_data$TARGET_AMT = ifelse(complete_eval_data$TARGET_FLAG ==1, prediction_linear, 0)
+print(head(complete_eval_data,10))
+write.csv(complete_eval_data, 'predictions.csv')
 ```
 
 # Appendix
@@ -575,12 +576,9 @@ write.csv(Eval_Data, 'predictions.csv')
 ```{r echo=TRUE, eval=FALSE}
 Train_Data <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW4/insurance_training_data.csv")
 Eval_Data <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW4/insurance-evaluation-data.csv")
-
 Train_Data <- Train_Data[,-1]
 str(Train_Data)
-
 summary(Train_Data)
-
 Train_Data$INCOME <- gsub(",","",(Train_Data$INCOME))
 Train_Data$INCOME <- sub('.', '', Train_Data$INCOME)
 Train_Data$INCOME <-trimws(Train_Data$INCOME, which = c("both"), whitespace = "[ \t\r\n]")
@@ -601,9 +599,7 @@ Train_Data$OLDCLAIM <-trimws(Train_Data$OLDCLAIM, which = c("both"), whitespace 
 Train_Data$OLDCLAIM <- as.numeric(Train_Data$OLDCLAIM)
 # 
 summary(Train_Data[,c(7,9,16,20)])
-
 colSums(is.na(Train_Data)) 
-
 Train_Data1<-dplyr::select_if(Train_Data, is.numeric)
 Train_Data1 %>%
   keep(is.numeric) %>%                     
@@ -611,123 +607,91 @@ Train_Data1 %>%
   ggplot(aes(value)) +                     
     facet_wrap(~ key, scales = "free") +  
     geom_density()
-
 Train_Data$HOMEKIDS[Train_Data$HOMEKIDS != 0 ] <- 1
 Eval_Data$HOMEKIDS[Eval_Data$HOMEKIDS != 0 ] <- 1
-
+Train_Data$CAR_AGE[Train_Data$AGE < 0 ] <- 0
+Eval_Data$CAR_AGE[Eval_Data$AGE < 0 ] <- 0
 Train_Data$CAR_AGE[Train_Data$CAR_AGE < 0 ] <- 0
 Eval_Data$CAR_AGE[Eval_Data$CAR_AGE < 0 ] <- 0
-
 Train_Data$JOB <- as.character(Train_Data$JOB)
 Train_Data$JOB[Train_Data$JOB == ""] <- "Unknown"
 Train_Data$JOB <- as.factor(Train_Data$JOB)
 Eval_Data$JOB <- as.character(Eval_Data$JOB)
 Eval_Data$JOB[Eval_Data$JOB == ""] <- "Unknown"
 Eval_Data$JOB <- as.factor(Eval_Data$JOB)
-
-Train_Data$EDUCATION <- ifelse(Train_Data$EDUCATION %in% c("PhD", "Masters"), 0, 1)
-
 summary(Train_Data)
-
 impute_train_data <- mice(Train_Data, m=5, maxit=20, method='pmm', seed=321, print = FALSE)
 densityplot(impute_train_data) 
 complete_train_data <- complete(impute_train_data,2)
-
+impute_eval_data <- mice(Eval_Data, m=5, maxit=20, method='pmm', seed=321, print = FALSE)
+densityplot(impute_eval_data) 
+complete_eval_data <- complete(impute_eval_data,2)
 m1b <- glm(factor(TARGET_FLAG) ~ ., family=binomial, data=subset(complete_train_data, select=-c(TARGET_AMT)))
 summary(m1b)
-
 m2b <- glm(factor(TARGET_FLAG) ~ KIDSDRIV+HOMEKIDS+log(INCOME+1)+log(HOME_VAL+1)+MSTATUS+log(TRAVTIME)+CAR_USE+log(BLUEBOOK)+TIF	+CAR_TYPE+log(OLDCLAIM+1)+CLM_FREQ+REVOKED+MVR_PTS +log(CAR_AGE+1)+URBANICITY, family=binomial, data=subset(complete_train_data, select=-c(TARGET_AMT)))
 summary(m2b)
-
 m3b <- stepAIC(m1b, direction='forward', trace=FALSE)
 summary(m3b)
-
 m4b <- stepAIC(m1b, direction='both', trace=FALSE)
 summary(m4b)
-
 anova(m4b,m1b, test="Chi")
-
 mlr_data = complete_train_data %>%
   filter(TARGET_FLAG == 1) %>%
   dplyr::select(-1)
-
 mlr1 = lm(TARGET_AMT ~ ., data = mlr_data)
 summary(mlr1)
-
 par(mfrow=c(2,2))
 plot(mlr1)
-
 mlr2 = lm(TARGET_AMT ~ KIDSDRIV + SEX + CAR_USE + REVOKED + CAR_AGE, data=mlr_data)
 summary(mlr2)
-
 par(mfrow=c(2,2))
 plot(mlr2)
-
 mlr3 = stepAIC(mlr1, direction='backward', trace=FALSE)
 summary(mlr3)
-
 par(mfrow=c(2,2))
 plot(mlr3)
-
 par(mfrow=c(2,2))
 plot(roc(complete_train_data$TARGET_FLAG,  predict(m1b, complete_train_data, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 1')
 plot(roc(complete_train_data$TARGET_FLAG,  predict(m2b, complete_train_data, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 2')
 plot(roc(complete_train_data$TARGET_FLAG,  predict(m3b, complete_train_data, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 3')
 plot(roc(complete_train_data$TARGET_FLAG,  predict(m4b, complete_train_data, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 4')
-
 CM1 <- confusionMatrix(as.factor(as.integer(fitted(m1b) > .5)), as.factor(m1b$y), positive = "1")
 CM2 <- confusionMatrix(as.factor(as.integer(fitted(m2b) > .5)), as.factor(m2b$y), positive = "1")
 CM3 <- confusionMatrix(as.factor(as.integer(fitted(m3b) > .5)), as.factor(m3b$y), positive = "1")
 CM4 <- confusionMatrix(as.factor(as.integer(fitted(m4b) > .5)), as.factor(m4b$y), positive = "1")
-
 Roc1 <- roc(complete_train_data$TARGET_FLAG,  predict(m1b, complete_train_data, interval = "prediction"))
 Roc2 <- roc(complete_train_data$TARGET_FLAG,  predict(m2b, complete_train_data, interval = "prediction"))
 Roc3 <- roc(complete_train_data$TARGET_FLAG,  predict(m3b, complete_train_data, interval = "prediction"))
 Roc4 <- roc(complete_train_data$TARGET_FLAG,  predict(m4b, complete_train_data, interval = "prediction"))
-
 metrics1 <- c(CM1$overall[1], "Class. Error Rate" = 1 - as.numeric(CM1$overall[1]), CM1$byClass[c(1, 2, 5, 7)], AUC = Roc1$auc)
 metrics2 <- c(CM2$overall[1], "Class. Error Rate" = 1 - as.numeric(CM2$overall[1]), CM2$byClass[c(1, 2, 5, 7)], AUC = Roc2$auc)
 metrics3 <- c(CM3$overall[1], "Class. Error Rate" = 1 - as.numeric(CM3$overall[1]), CM3$byClass[c(1, 2, 5, 7)], AUC = Roc3$auc)
 metrics4 <- c(CM4$overall[1], "Class. Error Rate" = 1 - as.numeric(CM4$overall[1]), CM4$byClass[c(1, 2, 5, 7)], AUC = Roc4$auc)
-
 kable(cbind(metrics1, metrics2, metrics3, metrics4), col.names = c("Model 1", "Model 2", "Model 3", "Model 4"))  %>% 
   kable_styling(full_width = T)
-
 m1.summary = summary(mlr1)
 m2.summary = summary(mlr2)
 m3.summary = summary(mlr3)
-
 m1.square = m1.summary$r.squared
 m2.square = m2.summary$r.squared
 m3.square = m3.summary$r.squared
-
 m1.fstat = as.numeric(m1.summary$fstatistic[1])
 m2.fstat = as.numeric(m2.summary$fstatistic[1])
 m3.fstat = as.numeric(m3.summary$fstatistic[1])
-
 m1.r = m1.summary$adj.r.squared
 m2.r = m2.summary$adj.r.squared
 m3.r = m3.summary$adj.r.squared
-
 metrics1 = c('R Square'=m1.square, 'F Stat'=m1.fstat, 'R Adj Square'=m1.r)
 metrics2 = c('R Square'=m2.square, 'F Stat'=m2.fstat, 'R Square'=m2.r)
 metrics3 = c('R Square'=m3.square, 'F Stat'=m3.fstat, 'R Square'=m3.r)
-
 kable(cbind(metrics1, metrics2, metrics3), col.names = c("Model 1", "Model 2", "Model 3"))  %>% 
   kable_styling(full_width = T)
-
-Eval_Data$BLUEBOOK = as.numeric(Eval_Data$BLUEBOOK)
-Eval_Data$INCOME = as.numeric(Eval_Data$INCOME)
-Eval_Data$HOME_VAL = as.numeric(Eval_Data$HOME_VAL)
-Eval_Data$OLDCLAIM = as.numeric(Eval_Data$OLDCLAIM)
-Eval_Data$TARGET_AMT = NULL
-
-Eval_Data$INDEX = NULL
-prediction_binary = predict(m4b, Eval_Data, type="response")
-Eval_Data$TARGET_FLAG = prediction_binary
-Eval_Data$TARGET_FLAG <- ifelse(Eval_Data$TARGET_FLAG > 0.5, 1, 0)
-
-prediction_linear = predict(mlr3, Eval_Data)
-Eval_Data$TARGET_AMT = prediction_linear
-write.csv(Eval_Data, 'predictions.csv')
+prediction_binary = predict(m4b, complete_eval_data, type="response")
+complete_eval_data$TARGET_FLAG = prediction_binary
+complete_eval_data$TARGET_FLAG <- ifelse(complete_eval_data$TARGET_FLAG > 0.5, 1, 0)
+print(head(complete_eval_data,10))
+prediction_linear = predict(mlr3, complete_eval_data)
+complete_eval_data$TARGET_AMT = ifelse(complete_eval_data$TARGET_FLAG ==1, prediction_linear, 0)
+print(head(complete_eval_data,10))
+write.csv(complete_eval_data, 'predictions.csv')
 ```
