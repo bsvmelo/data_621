@@ -27,7 +27,7 @@ City University of New York, School of Professional Studies - Data 621\\
 \bigskip
 DATA 621 – Business Analytics and Data Mining\\
 \medskip
-Home Work 3\\
+Home Work 4\\
 \medskip
 Prepared by:\\
 \medskip
@@ -70,7 +70,7 @@ if(!require('gridExtra')) (install.packages('gridExtra'))
 
 \newpage
 
-# Overview
+# Introduction
 
 In this homework assignment, we will explore, analyze and model a data set containing approximately 8000 records representing a customer at an auto insurance company. Each record has two response variables. The first response variable, TARGET_FLAG, is a 1 or a 0. A “1” means that the person was in a car crash. A zero means that the person was not in a car crash. The second response variable is TARGET_AMT. This value is zero if the person did not crash their car. But if they did crash their car, this number will be a value greater than zero.
 
@@ -82,7 +82,6 @@ The purpose of this report is to build multiple linear regression and binary log
 # Data Exploration  
 
 ```{r echo=FALSE}
-
 Train_Data <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW4/insurance_training_data.csv")
 Eval_Data <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW4/insurance-evaluation-data.csv")
 ```
@@ -102,7 +101,6 @@ Below we display a summary of each feature.
 
 ```{r echo=FALSE}
 #Summary of each feature
-
 summary(Train_Data) 
 ```
 
@@ -127,7 +125,7 @@ We can observe the followings:
 **INCOME** - **BLUEBOOK** - **HOME_VAL** - **OLDCLAIM** : These are numerical variables that need to be converted accordingly.
 
 
-##Convertion to numerical
+## Convertion to numerical
 
 As can be seen below, these four features are now corrected represented.
 
@@ -136,7 +134,6 @@ Train_Data$INCOME <- gsub(",","",(Train_Data$INCOME))
 Train_Data$INCOME <- sub('.', '', Train_Data$INCOME)
 Train_Data$INCOME <-trimws(Train_Data$INCOME, which = c("both"), whitespace = "[ \t\r\n]")
 Train_Data$INCOME <- as.numeric(Train_Data$INCOME)
-
 Train_Data$HOME_VAL <- gsub(",","",(Train_Data$HOME_VAL))
 Train_Data$HOME_VAL <- sub('.', '', Train_Data$HOME_VAL)
 Train_Data$HOME_VAL <-trimws(Train_Data$HOME_VAL, which = c("both"), whitespace = "[ \t\r\n]")
@@ -155,7 +152,7 @@ Train_Data$OLDCLAIM <- as.numeric(Train_Data$OLDCLAIM)
 summary(Train_Data[,c(7,9,16,20)])
 ```
 
-##Missing Values
+## Missing Values
 
 ```{r echo=FALSE}
 #missing values by column
@@ -164,19 +161,18 @@ colSums(is.na(Train_Data))
 
 There are missing values in several variables for a total of 1,879 NA's or about 1% of the total dataset.
 
-##Univariate Distribution - Histograms
+## Univariate Distribution - Histograms
 
 Below the numeric feature distributions are displayed.
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
-Train_Data1<-select_if(Train_Data, is.numeric)
+Train_Data1<-dplyr::select_if(Train_Data, is.numeric)
 Train_Data1 %>%
   keep(is.numeric) %>%                     
-  gather() %>%                            
+  tidyr::gather() %>%                            
   ggplot(aes(value)) +                     
     facet_wrap(~ key, scales = "free") +  
     geom_density()  
-
 ```
 We can see that AGE, BLUEBOOK, CAR_AGE, HOME_VAL, INCOME, TRAVTIME and YOJ resemblance somewhat a normal distribution while CLM_FREQ, HOMEKIDS, KIDSDRIV, MVR_PTS, OLDCLAIM, TARGET_AMT, TIF resemblance either a binomial or Poisson distribution.
 
@@ -187,8 +183,8 @@ For the categorical features, we will displayed their distribution using bar cha
 
 
 ```{r message=FALSE, warning=FALSE, echo=FALSE}
-Train_Data %>% select(!is.numeric) %>%
-  gather() %>%                            
+Train_Data %>% dplyr::select(!is.numeric) %>%
+  tidyr::gather() %>%                            
   ggplot(aes(value)) +                     
     facet_wrap(~ key, scales = "free") +  
    geom_bar() + coord_flip()  
@@ -202,10 +198,12 @@ plot_correlation(Train_Data)
 ```{r, echo=FALSE}
 pairs(Train_Data1 %>% select_if(is.numeric))
 ```
-# 2. DATA PREPARATION
+# Data Preparation
 
-## Adjusting Variables  
-Looking at the plots we see we have to make a few changes to some variables. We'll make HOMEKIDS boolean instead of a factor. For the rows where CAR_AGE are labled numbers, we make 0. For blank JOBS we label those as "Unknown". Finally, change Education to 1 if PhD and Masters.
+## Adjusting Variables
+
+Looking at the plots we see we have to make a few changes to some variables. We'll make HOMEKIDS boolean instead of a factor. For the rows where CAR_AGE are labeled numbers, we make 0. For blank JOBS we label those as "Unknown". Finally, change Education to 1 if PhD and Masters.
+
 ```{r Homekids}
 Train_Data$HOMEKIDS[Train_Data$HOMEKIDS != 0 ] <- 1
 Eval_Data$HOMEKIDS[Eval_Data$HOMEKIDS != 0 ] <- 1
@@ -229,8 +227,10 @@ Eval_Data$JOB <- as.factor(Eval_Data$JOB)
 Train_Data$EDUCATION <- ifelse(Train_Data$EDUCATION %in% c("PhD", "Masters"), 0, 1)
 ```
 
-## Missing Data  
-We have missing data in income, yoj, home_val, and car_age. 
+## Missing Data
+
+We have missing data for income, yoj, home_val, and car_age variables.
+
 ```{r}
 summary(Train_Data)
 plot_missing(Train_Data)
@@ -248,6 +248,7 @@ complete_train_data <- complete(impute_train_data,2)
 
 ### Binary Model 1 - All Variables
 
+
 Our first model will seek to create a baseline using binary response variable, using a logistic regression model that contains all of our features. 
 
 ```{r}
@@ -257,6 +258,7 @@ summary(m1b)
 The AIC result from the binomial model can be derived using the logit link function. 
 
 ### Binary Model 2 - Hand Pick Model
+
 
 We can see that from saturated model above that variables *AGE*, *YOJ*, *PARENT1*, *SEX*, *EDUCATION*, *JOB*, and *RED_CAR* have p values greater than 0.05. These variables will be dropped to build the next model.
 
@@ -268,6 +270,7 @@ summary(m2b)
 ```
 
 ### Binary Model 3 - Forward Step Model
+
 
 We will now build a model using forward selection in order to compare if using forward selection is better than hand picking values to create a model.
 
@@ -318,6 +321,7 @@ par(mfrow=c(2,2))
 plot(mlr1)
 ```
 
+
 Looking at the plot above we can see that the Residual vs Fitted graph has a large variance for a couple of outliers while a majority of the points have very low residuals. Also looking at the Normal Q-Q graph we can see that it is not a normal distribution. This is quite good for a model which utilizes all of the variables and we would like to see if we can improve the model by selecting variables that are significant.
 
 Some variables that we would like to use for the next model are **KIDSDRIV**, **SEX**, **CAR_USE**, **REVOKED**, and **CAR_AGE**. These variables makes a lot of are usually thought of as the variables which can increase the cost of insurance
@@ -346,7 +350,6 @@ summary(mlr3)
 ```{r}
 par(mfrow=c(2,2))
 plot(mlr3)
-```
 
 Using the backward step function we can see that the model choose **MSTATUS**, **SEX**, **BLUEBOOK**, **REVOKED**, and **MVR_PTS**. Looking at the residual vs fitted plot we still see a variance caused by outliers.
 
@@ -457,8 +460,3 @@ prediction_linear = predict(mlr3, Eval_Data)
 Eval_Data$TARGET_AMT = prediction_linear
 write.csv(Eval_Data, 'predictions.csv')
 ```
-
-
-
-
-
