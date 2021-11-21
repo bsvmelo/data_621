@@ -65,6 +65,8 @@ if(!require('randomForest')) (install.packages('randomForest'))
 if(!require('pROC')) (install.packages('pROC'))
 if(!require('kableExtra')) (install.packages('kableExtra'))
 if(!require('gridExtra')) (install.packages('gridExtra'))
+if(!require('ggcorrplot')) (install.packages("ggcorrplot"))
+if(!require('fitdistrplus')) (install.packages("fitdistrplus"))
 ```
 
 
@@ -87,14 +89,16 @@ Eval_Data <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1
 ```
 
 
-Let's take a look in the structure of our train data set - excluding the first column **index** which it is not to be used.
+Let's take a look in the structure of our train data set - excluding the first column **index** which it is not to be used. Evaluation data set structure is similar to the train data set and will go through same
 
 
 ```{r echo=FALSE}
 Train_Data <- Train_Data[,-1]
 str(Train_Data)
+
+Eval_Data <- Eval_Data[,-1]
 ```
-We can see that the training data has 8161 observations(rows) and 25 variables (columns). Of these 25 columns, many are of factors type but were imported as characters or doubles - there will be properly converted in the preparation section. Also, there may be some ordinal levels within some of the factors. 
+We can see that the training data has 8161 observations(rows) and 25 variables (columns). Of these 25 columns, many are of factors type but were imported as characters or doubles - there will be properly converted in the preparation section. Also, there may be some ordinal levels within some of the factors.
 
 Below we display a summary of each feature.
 
@@ -112,7 +116,7 @@ We can observe the followings:
 
 **HOMEKIDS**: Max is 5
 
-**TRAVTIME**: 75% of the population is below 44 but the Max value is 142. It looks like there may be some outliers here. 
+**TRAVTIME**: 75% of the population is below 44 but the Max value is 142. It looks like there may be some outliers here.
 
 **TIF**: The majority of people are not long time customers
 
@@ -124,7 +128,6 @@ We can observe the followings:
 
 **INCOME** - **BLUEBOOK** - **HOME_VAL** - **OLDCLAIM** : These are numerical variables that need to be converted accordingly.
 
-
 ## Convertion to numerical
 
 As can be seen below, these four features are now corrected represented.
@@ -134,21 +137,43 @@ Train_Data$INCOME <- gsub(",","",(Train_Data$INCOME))
 Train_Data$INCOME <- sub('.', '', Train_Data$INCOME)
 Train_Data$INCOME <-trimws(Train_Data$INCOME, which = c("both"), whitespace = "[ \t\r\n]")
 Train_Data$INCOME <- as.numeric(Train_Data$INCOME)
+
 Train_Data$HOME_VAL <- gsub(",","",(Train_Data$HOME_VAL))
 Train_Data$HOME_VAL <- sub('.', '', Train_Data$HOME_VAL)
 Train_Data$HOME_VAL <-trimws(Train_Data$HOME_VAL, which = c("both"), whitespace = "[ \t\r\n]")
 Train_Data$HOME_VAL <- as.numeric(Train_Data$HOME_VAL)
-# 
+#
 Train_Data$BLUEBOOK <- gsub(",","",(Train_Data$BLUEBOOK))
 Train_Data$BLUEBOOK <- sub('.', '', Train_Data$BLUEBOOK)
 Train_Data$BLUEBOOK <-trimws(Train_Data$BLUEBOOK, which = c("both"), whitespace = "[ \t\r\n]")
 Train_Data$BLUEBOOK <- as.numeric(Train_Data$BLUEBOOK)
-# 
+#
 Train_Data$OLDCLAIM <- gsub(",","",(Train_Data$OLDCLAIM))
 Train_Data$OLDCLAIM <- sub('.', '', Train_Data$OLDCLAIM)
 Train_Data$OLDCLAIM <-trimws(Train_Data$OLDCLAIM, which = c("both"), whitespace = "[ \t\r\n]")
 Train_Data$OLDCLAIM <- as.numeric(Train_Data$OLDCLAIM)
-# 
+#
+Eval_Data$INCOME <- gsub(",","",(Eval_Data$INCOME))
+Eval_Data$INCOME <- sub('.', '', Eval_Data$INCOME)
+Eval_Data$INCOME <-trimws(Eval_Data$INCOME, which = c("both"), whitespace = "[ \t\r\n]")
+Eval_Data$INCOME <- as.numeric(Eval_Data$INCOME)
+
+Eval_Data$HOME_VAL <- gsub(",","",(Eval_Data$HOME_VAL))
+Eval_Data$HOME_VAL <- sub('.', '', Eval_Data$HOME_VAL)
+Eval_Data$HOME_VAL <-trimws(Eval_Data$HOME_VAL, which = c("both"), whitespace = "[ \t\r\n]")
+Eval_Data$HOME_VAL <- as.numeric(Eval_Data$HOME_VAL)
+#
+Eval_Data$BLUEBOOK <- gsub(",","",(Eval_Data$BLUEBOOK))
+Eval_Data$BLUEBOOK <- sub('.', '', Eval_Data$BLUEBOOK)
+Eval_Data$BLUEBOOK <-trimws(Eval_Data$BLUEBOOK, which = c("both"), whitespace = "[ \t\r\n]")
+Eval_Data$BLUEBOOK <- as.numeric(Eval_Data$BLUEBOOK)
+#
+Eval_Data$OLDCLAIM <- gsub(",","",(Eval_Data$OLDCLAIM))
+Eval_Data$OLDCLAIM <- sub('.', '', Eval_Data$OLDCLAIM)
+Eval_Data$OLDCLAIM <-trimws(Eval_Data$OLDCLAIM, which = c("both"), whitespace = "[ \t\r\n]")
+Eval_Data$OLDCLAIM <- as.numeric(Eval_Data$OLDCLAIM)
+#
+
 summary(Train_Data[,c(7,9,16,20)])
 ```
 
@@ -176,8 +201,113 @@ Train_Data1 %>%
 ```
 We can see that AGE, BLUEBOOK, CAR_AGE, HOME_VAL, INCOME, TRAVTIME and YOJ resemblance somewhat a normal distribution while CLM_FREQ, HOMEKIDS, KIDSDRIV, MVR_PTS, OLDCLAIM, TARGET_AMT, TIF resemblance either a binomial or Poisson distribution.
 
+Let's investigate using a qq_plot:
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+Train_Data1<-select_if(Train_Data, is.numeric)
+Train_Data1 %>%
+  keep(is.numeric) %>%
+  gather() %>%
+  ggplot(aes(sample=value)) +                    
+    facet_wrap(~ key, scales = "free") +  
+      stat_qq(distribution = stats::qnorm) +
+      stat_qq_line(distribution = stats::qnorm)
+```
+
+In order to descriptive the distribution, we used function 'descdist' from package 'fitdistrplus'. We display one output for illustrative purposes - on featue **KIDSDRIV**, and results for all other features are shown below:
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+  descdist(Train_Data1[,3], discrete = TRUE)
+```
+
+We can observe the followings:
+
+**AGE**: normal distribution
+
+*BLUEBOOK**: quasi-normal/lognormal - skewed distribution with heavy tails
+
+**CAR_AGE**: quasi-normal/lognormal - skewed distribution with high frequency of <1, including negative.
+
+**CLM_FREQ**: not normal - poisson type
+
+**HOME_VAL**: quasi-normal - skewed distribution with heavy tails
+
+**HOMEKIDS*: Beta distribution
+
+**INCOME**:  quasi-normal - skewed distribution with heavy tails
+
+**KIDSDRIV**: Negative binomial / Poisson
+
+**MVR_PTS**: Beta distribution
+
+**TARGET_AMT**: Gamma distribution
+
+**TIF**: Poisson distribution
+
+**TRAVTIME**: quasi-normal - skewed distribution with heavy tails
+
+**YOJ**: normal distribution with  heavy tail
+
+**OLDCLAIM**: Poisson distribution
+
+**CLM_FREQ**: Beta distribution
+
 Some of the variables present a lot of zeros which could be explained as lack of data, and as such should be excluded, for example in HOMEVAL, while in others they are a rightful part of the distribution, and should be considered in the analysis, such as in INCOME, CLM_FREQ, HOMEKIDS, KIDSDRV, MVR_PTS,  OLDCLAIM, etc.
 
+For the categorical features, we will displayed their distribution using bar charts.
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+Train_Data2<-Train_Data %>% select_if(negate(is.numeric))
+Train_Data2 %>%
+  gather() %>%                            
+  ggplot(aes(value)) +                    
+    facet_wrap(~ key, scales = "free", nrow = 4) +  
+   geom_bar() + coord_flip()
+```
+
+Some of the features have several sub-categories, like **CAR_TYPE**, **EDUCATION**, and **JOB**, while the other features are binary in nature. Interaction between these sub-categories and the continous variables to be taken into consideration while building models.
+
+## Correlation matrix
+
+Considering the number of variables and sub-categories within the discrete features, the correlation matrix visualization is challenging. We will then show two matrices one with numeric only and other with discrete variable. Analysis are based on the whole dataset, though.
+
+We also ran 'pairs' a function that produces a matrix of scatterplots - not displayed here due to size.
+
+```{r, echo=FALSE}
+# par(mfcol = 1:2)
+model.matrix(~0+., Train_Data1) %>%
+  cor(use="pairwise.complete.obs") %>%
+  ggcorrplot(show.diag = F, type="lower", lab=TRUE, lab_size=2)
+```
+
+```{r, echo=FALSE, fig.height = 28, fig.width = 20}
+model.matrix(~0+., Train_Data2) %>%
+  cor(use="pairwise.complete.obs") %>%
+  ggcorrplot(show.diag = F, type="lower", lab=TRUE, lab_size=2)
+```
+
+Some observations from the above charts:
+
+- positive correlation:    
+Income and HomeVal    
+Income and BlueBook    
+SexF and CarType SUV      
+Phd Degree and Job as Doctor
+Master's Degree and Job as Lawyer
+Income and Education
+Income and Urbanicity Urban
+     
+- Negative correlation:      
+Age and HomeKids    
+HomeKids and CarAge  
+Urbanicity Rural and Claim frequency
+Urbanicity Rural and BlueBook    
+
+## Evaluation dataset              
+Procedures described above were also applied to the evaluation set.
+
+
+# Data Prep
 
 ## Adjusting Variables
 
@@ -224,7 +354,7 @@ complete_train_data <- complete(impute_train_data,2)
 
 # Building Models
 
-### Binary Model 1 - All Variables
+## Binary Model 1 - All Variables
 
 Our first model will seek to create a baseline using binary response variable, using a logistic regression model that contains all of our features. 
 
@@ -234,7 +364,7 @@ summary(m1b)
 ```
 The AIC result from the binomial model can be derived using the logit link function. 
 
-### Binary Model 2 - Hand Pick Model
+## Binary Model 2 - Hand Pick Model
 
 
 We can see that from saturated model above that variables *AGE*, *YOJ*, *PARENT1*, *SEX*, *EDUCATION*, *JOB*, and *RED_CAR* have p values greater than 0.05. These variables will be dropped to build the next model.
@@ -246,7 +376,7 @@ m2b <- glm(factor(TARGET_FLAG) ~ KIDSDRIV+HOMEKIDS+log(INCOME+1)+log(HOME_VAL+1)
 summary(m2b)
 ```
 
-### Binary Model 3 - Forward Step Model
+## Binary Model 3 - Forward Step Model
 
 
 We will now build a model using forward selection in order to compare if using forward selection is better than hand picking values to create a model.
@@ -258,7 +388,7 @@ m3b <- stepAIC(m1b, direction='forward', trace=FALSE)
 summary(m3b)
 ```
 
-### Binary Model 4 - Stepwise Step Model
+## Binary Model 4 - Stepwise Step Model
 
 We also can use the same stepAIC function to build the fourth model using stepwise regression. The stepwise regression method involves adding or removing potential explanatory variables in succession and testing for statistical significance after each iteration. This is exactly same result as the backward step model. 
 
@@ -278,7 +408,7 @@ anova(m4b,m1b, test="Chi")
 We next ran some multivariate regression models, using the features to predict the numeric response variable, TARGET_AMT, which gives the costs associated with a car's accident, creating a multiple linear regression model to predict the response variable.
 
 
-### Multi Linear Regression Model 1 - All Variables
+## Multi Linear Regression Model 1 - All Variables
 
 For the multi linear regression we want to know what is going to be the insurance cost if a person has crashed their car. We are going to build a multi linear regression model which includes all the data, from there we will keep the variables that have significance and use that to build subsequence models. We will first need to create a dataset specifically for a multi linear regression as we only care about if a customer has crashed their car. 
 
@@ -303,7 +433,7 @@ Looking at the plot above we can see that the Residual vs Fitted graph has a lar
 
 Some variables that we would like to use for the next model are **KIDSDRIV**, **SEX**, **CAR_USE**, **REVOKED**, and **CAR_AGE**. These variables makes a lot of are usually thought of as the variables which can increase the cost of insurance
 
-### Multi Linear Regression Model 2 - Hand Picking Variables
+## Multi Linear Regression Model 2 - Hand Picking Variables
 
 ```{r, echo=FALSE}
 mlr2 = lm(TARGET_AMT ~ KIDSDRIV + SEX + CAR_USE + REVOKED + CAR_AGE, data=mlr_data)
@@ -317,7 +447,7 @@ plot(mlr2)
 
 With the second model we can see that we have a lower R Squared value in our new model compared to the first model which included all the variables. We can also see that there is still a large variance with the Residual vs Fitted plot. We will next try to use a stepwise function to find the best model from all the variables.
 
-### Multi Linear Regression Model 3 - Stepwise Function
+## Multi Linear Regression Model 3 - Stepwise Function
 
 ```{r, echo=FALSE}
 mlr3 = stepAIC(mlr1, direction='backward', trace=FALSE)
