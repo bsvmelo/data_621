@@ -179,42 +179,21 @@ We can see that AGE, BLUEBOOK, CAR_AGE, HOME_VAL, INCOME, TRAVTIME and YOJ resem
 Some of the variables present a lot of zeros which could be explained as lack of data, and as such should be excluded, for example in HOMEVAL, while in others they are a rightful part of the distribution, and should be considered in the analysis, such as in INCOME, CLM_FREQ, HOMEKIDS, KIDSDRV, MVR_PTS,  OLDCLAIM, etc.
 
 
-For the categorical features, we will displayed their distribution using bar charts.
-
-
-```{r message=FALSE, warning=FALSE, echo=FALSE}
-Train_Data %>% dplyr::select(!is.numeric) %>%
-  tidyr::gather() %>%                            
-  ggplot(aes(value)) +                     
-    facet_wrap(~ key, scales = "free") +  
-   geom_bar() + coord_flip()  
-```
-
-### Correlation matrix
-
-```{r, echo=FALSE}
-plot_correlation(Train_Data)
-```
-```{r, echo=FALSE}
-pairs(Train_Data1 %>% select_if(is.numeric))
-```
-# Data Preparation
-
 ## Adjusting Variables
 
 Looking at the plots we see we have to make a few changes to some variables. We'll make HOMEKIDS boolean instead of a factor. For the rows where CAR_AGE are labeled numbers, we make 0. For blank JOBS we label those as "Unknown". Finally, change Education to 1 if PhD and Masters.
 
-```{r Homekids}
+```{r Homekids, echo=FALSE}
 Train_Data$HOMEKIDS[Train_Data$HOMEKIDS != 0 ] <- 1
 Eval_Data$HOMEKIDS[Eval_Data$HOMEKIDS != 0 ] <- 1
 ```
 
-```{r CarAge}
+```{r CarAge, echo=FALSE}
 Train_Data$CAR_AGE[Train_Data$CAR_AGE < 0 ] <- 0
 Eval_Data$CAR_AGE[Eval_Data$CAR_AGE < 0 ] <- 0
 ```
 
-```{r JOB}
+```{r JOB, echo=FALSE}
 Train_Data$JOB <- as.character(Train_Data$JOB)
 Train_Data$JOB[Train_Data$JOB == ""] <- "Unknown"
 Train_Data$JOB <- as.factor(Train_Data$JOB)
@@ -223,7 +202,7 @@ Eval_Data$JOB[Eval_Data$JOB == ""] <- "Unknown"
 Eval_Data$JOB <- as.factor(Eval_Data$JOB)
 ```
 
-```{r Education}
+```{r Education, echo=FALSE}
 Train_Data$EDUCATION <- ifelse(Train_Data$EDUCATION %in% c("PhD", "Masters"), 0, 1)
 ```
 
@@ -233,12 +212,11 @@ We have missing data for income, yoj, home_val, and car_age variables.
 
 ```{r}
 summary(Train_Data)
-plot_missing(Train_Data)
 ```
 
 We assume the missing data are Missing at Random and choose to impute. The reason we want to impute the missing data rather than replacing with mean or median because of large number of missing values. If we're replacing with mean or median on the large number of missing values, can result in loss of variation in data. We're imputing the missing data using the MICE package. The method of predictive mean matching (PMM) is selected for continuous variables.
 
-```{r}
+```{r, echo=FALSE}
 impute_train_data <- mice(Train_Data, m=5, maxit=20, method='pmm', seed=321, print = FALSE)
 densityplot(impute_train_data) 
 complete_train_data <- complete(impute_train_data,2)
@@ -248,10 +226,9 @@ complete_train_data <- complete(impute_train_data,2)
 
 ### Binary Model 1 - All Variables
 
-
 Our first model will seek to create a baseline using binary response variable, using a logistic regression model that contains all of our features. 
 
-```{r}
+```{r, echo=FALSE}
 m1b <- glm(factor(TARGET_FLAG) ~ ., family=binomial, data=subset(complete_train_data, select=-c(TARGET_AMT)))
 summary(m1b)
 ```
@@ -264,7 +241,7 @@ We can see that from saturated model above that variables *AGE*, *YOJ*, *PARENT1
 
 Also, we see some predictors are skewed and so we take log of them to build model 2.
 
-```{r}
+```{r, echo=FALSE}
 m2b <- glm(factor(TARGET_FLAG) ~ KIDSDRIV+HOMEKIDS+log(INCOME+1)+log(HOME_VAL+1)+MSTATUS+log(TRAVTIME)+CAR_USE+log(BLUEBOOK)+TIF	+CAR_TYPE+log(OLDCLAIM+1)+CLM_FREQ+REVOKED+MVR_PTS +log(CAR_AGE+1)+URBANICITY, family=binomial, data=subset(complete_train_data, select=-c(TARGET_AMT)))
 summary(m2b)
 ```
@@ -276,7 +253,7 @@ We will now build a model using forward selection in order to compare if using f
 
 We can use the same stepAIC function to build the third model. The forward selection approach starts from the null model and adds a variable that improves the model the most, one at a time, until the stopping criterion is met. We can see the result is different compared to the backward selection approach. The AIC is a little higher.
 
-```{r}
+```{r, echo=FALSE}
 m3b <- stepAIC(m1b, direction='forward', trace=FALSE)
 summary(m3b)
 ```
@@ -285,7 +262,7 @@ summary(m3b)
 
 We also can use the same stepAIC function to build the fourth model using stepwise regression. The stepwise regression method involves adding or removing potential explanatory variables in succession and testing for statistical significance after each iteration. This is exactly same result as the backward step model. 
 
-```{r}
+```{r, echo=FALSE}
 m4b <- stepAIC(m1b, direction='both', trace=FALSE)
 summary(m4b)
 ```
@@ -294,7 +271,7 @@ Judging by AIC, the stepwise approach reduces the dimensionality and improves fi
 
 The analysis of deviance table shows further confirms that dropping these statistical insignificant variables  {*AGE*, *SEX*, *EDUCATION*, *RED_CAR*} in model 4.
 
-```{r}
+```{r, echo=FALSE}
 anova(m4b,m1b, test="Chi")
 ```
 
@@ -305,18 +282,18 @@ We next ran some multivariate regression models, using the features to predict t
 
 For the multi linear regression we want to know what is going to be the insurance cost if a person has crashed their car. We are going to build a multi linear regression model which includes all the data, from there we will keep the variables that have significance and use that to build subsequence models. We will first need to create a dataset specifically for a multi linear regression as we only care about if a customer has crashed their car. 
 
-```{r}
+```{r, echo=FALSE}
 mlr_data = complete_train_data %>%
   filter(TARGET_FLAG == 1) %>%
   dplyr::select(-1)
 ```
 
-```{r}
+```{r, echo=FALSE}
 mlr1 = lm(TARGET_AMT ~ ., data = mlr_data)
 summary(mlr1)
 ```
 
-```{r}
+```{r, echo=FALSE}
 par(mfrow=c(2,2))
 plot(mlr1)
 ```
@@ -328,12 +305,12 @@ Some variables that we would like to use for the next model are **KIDSDRIV**, **
 
 ### Multi Linear Regression Model 2 - Hand Picking Variables
 
-```{r}
+```{r, echo=FALSE}
 mlr2 = lm(TARGET_AMT ~ KIDSDRIV + SEX + CAR_USE + REVOKED + CAR_AGE, data=mlr_data)
 summary(mlr2)
 ```
 
-```{r}
+```{r, echo=FALSE}
 par(mfrow=c(2,2))
 plot(mlr2)
 ```
@@ -342,12 +319,12 @@ With the second model we can see that we have a lower R Squared value in our new
 
 ### Multi Linear Regression Model 3 - Stepwise Function
 
-```{r}
+```{r, echo=FALSE}
 mlr3 = stepAIC(mlr1, direction='backward', trace=FALSE)
 summary(mlr3)
 ```
 
-```{r}
+```{r, echo=FALSE}
 par(mfrow=c(2,2))
 plot(mlr3)
 ```
@@ -403,31 +380,31 @@ By looking at the ROC curves, model 1, 3, and 4 are showing the same area under 
 
 We will be looking at all the models created and looking at the metrics like R Squared Value, RMSE, F-Statistics, and Residual Plots in order to determine which is the best model which represents our data. We will then compare the best model selected against the evaluation data set in order to see if the model truly represents the dataset
 
-```{r}
+```{r, echo=FALSE}
 m1.summary = summary(mlr1)
 m2.summary = summary(mlr2)
 m3.summary = summary(mlr3)
 ```
 
-```{r}
+```{r, echo=FALSE}
 m1.square = m1.summary$r.squared
 m2.square = m2.summary$r.squared
 m3.square = m3.summary$r.squared
 ```
 
-```{r f-statistics}
+```{r f-statistics, echo=FALSE}
 m1.fstat = as.numeric(m1.summary$fstatistic[1])
 m2.fstat = as.numeric(m2.summary$fstatistic[1])
 m3.fstat = as.numeric(m3.summary$fstatistic[1])
 ```
 
-```{r rsquare}
+```{r rsquare, echo=FALSE}
 m1.r = m1.summary$adj.r.squared
 m2.r = m2.summary$adj.r.squared
 m3.r = m3.summary$adj.r.squared
 ```
 
-```{r}
+```{r, echo=FALSE}
 metrics1 = c('R Square'=m1.square, 'F Stat'=m1.fstat, 'R Adj Square'=m1.r)
 metrics2 = c('R Square'=m2.square, 'F Stat'=m2.fstat, 'R Square'=m2.r)
 metrics3 = c('R Square'=m3.square, 'F Stat'=m3.fstat, 'R Square'=m3.r)
@@ -451,12 +428,175 @@ Eval_Data$OLDCLAIM = as.numeric(Eval_Data$OLDCLAIM)
 Eval_Data$TARGET_AMT = NULL
 
 Eval_Data$INDEX = NULL
-prediction_binary = predict(m4b, Eval_Data)
+prediction_binary = predict(m4b, Eval_Data, type="response")
 Eval_Data$TARGET_FLAG = prediction_binary
+Eval_Data$TARGET_FLAG <- ifelse(Eval_Data$TARGET_FLAG > 0.5, 1, 0)
 ```
 
 Multi Linear Model:
 ```{r}
+prediction_linear = predict(mlr3, Eval_Data)
+Eval_Data$TARGET_AMT = prediction_linear
+write.csv(Eval_Data, 'predictions.csv')
+```
+
+# Appendix
+
+```{r echo=TRUE, eval=FALSE}
+Train_Data <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW4/insurance_training_data.csv")
+Eval_Data <- read.csv("https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW4/insurance-evaluation-data.csv")
+
+Train_Data <- Train_Data[,-1]
+str(Train_Data)
+
+summary(Train_Data)
+
+Train_Data$INCOME <- gsub(",","",(Train_Data$INCOME))
+Train_Data$INCOME <- sub('.', '', Train_Data$INCOME)
+Train_Data$INCOME <-trimws(Train_Data$INCOME, which = c("both"), whitespace = "[ \t\r\n]")
+Train_Data$INCOME <- as.numeric(Train_Data$INCOME)
+Train_Data$HOME_VAL <- gsub(",","",(Train_Data$HOME_VAL))
+Train_Data$HOME_VAL <- sub('.', '', Train_Data$HOME_VAL)
+Train_Data$HOME_VAL <-trimws(Train_Data$HOME_VAL, which = c("both"), whitespace = "[ \t\r\n]")
+Train_Data$HOME_VAL <- as.numeric(Train_Data$HOME_VAL)
+# 
+Train_Data$BLUEBOOK <- gsub(",","",(Train_Data$BLUEBOOK))
+Train_Data$BLUEBOOK <- sub('.', '', Train_Data$BLUEBOOK)
+Train_Data$BLUEBOOK <-trimws(Train_Data$BLUEBOOK, which = c("both"), whitespace = "[ \t\r\n]")
+Train_Data$BLUEBOOK <- as.numeric(Train_Data$BLUEBOOK)
+# 
+Train_Data$OLDCLAIM <- gsub(",","",(Train_Data$OLDCLAIM))
+Train_Data$OLDCLAIM <- sub('.', '', Train_Data$OLDCLAIM)
+Train_Data$OLDCLAIM <-trimws(Train_Data$OLDCLAIM, which = c("both"), whitespace = "[ \t\r\n]")
+Train_Data$OLDCLAIM <- as.numeric(Train_Data$OLDCLAIM)
+# 
+summary(Train_Data[,c(7,9,16,20)])
+
+colSums(is.na(Train_Data)) 
+
+Train_Data1<-dplyr::select_if(Train_Data, is.numeric)
+Train_Data1 %>%
+  keep(is.numeric) %>%                     
+  tidyr::gather() %>%                            
+  ggplot(aes(value)) +                     
+    facet_wrap(~ key, scales = "free") +  
+    geom_density()
+
+Train_Data$HOMEKIDS[Train_Data$HOMEKIDS != 0 ] <- 1
+Eval_Data$HOMEKIDS[Eval_Data$HOMEKIDS != 0 ] <- 1
+
+Train_Data$CAR_AGE[Train_Data$CAR_AGE < 0 ] <- 0
+Eval_Data$CAR_AGE[Eval_Data$CAR_AGE < 0 ] <- 0
+
+Train_Data$JOB <- as.character(Train_Data$JOB)
+Train_Data$JOB[Train_Data$JOB == ""] <- "Unknown"
+Train_Data$JOB <- as.factor(Train_Data$JOB)
+Eval_Data$JOB <- as.character(Eval_Data$JOB)
+Eval_Data$JOB[Eval_Data$JOB == ""] <- "Unknown"
+Eval_Data$JOB <- as.factor(Eval_Data$JOB)
+
+Train_Data$EDUCATION <- ifelse(Train_Data$EDUCATION %in% c("PhD", "Masters"), 0, 1)
+
+summary(Train_Data)
+
+impute_train_data <- mice(Train_Data, m=5, maxit=20, method='pmm', seed=321, print = FALSE)
+densityplot(impute_train_data) 
+complete_train_data <- complete(impute_train_data,2)
+
+m1b <- glm(factor(TARGET_FLAG) ~ ., family=binomial, data=subset(complete_train_data, select=-c(TARGET_AMT)))
+summary(m1b)
+
+m2b <- glm(factor(TARGET_FLAG) ~ KIDSDRIV+HOMEKIDS+log(INCOME+1)+log(HOME_VAL+1)+MSTATUS+log(TRAVTIME)+CAR_USE+log(BLUEBOOK)+TIF	+CAR_TYPE+log(OLDCLAIM+1)+CLM_FREQ+REVOKED+MVR_PTS +log(CAR_AGE+1)+URBANICITY, family=binomial, data=subset(complete_train_data, select=-c(TARGET_AMT)))
+summary(m2b)
+
+m3b <- stepAIC(m1b, direction='forward', trace=FALSE)
+summary(m3b)
+
+m4b <- stepAIC(m1b, direction='both', trace=FALSE)
+summary(m4b)
+
+anova(m4b,m1b, test="Chi")
+
+mlr_data = complete_train_data %>%
+  filter(TARGET_FLAG == 1) %>%
+  dplyr::select(-1)
+
+mlr1 = lm(TARGET_AMT ~ ., data = mlr_data)
+summary(mlr1)
+
+par(mfrow=c(2,2))
+plot(mlr1)
+
+mlr2 = lm(TARGET_AMT ~ KIDSDRIV + SEX + CAR_USE + REVOKED + CAR_AGE, data=mlr_data)
+summary(mlr2)
+
+par(mfrow=c(2,2))
+plot(mlr2)
+
+mlr3 = stepAIC(mlr1, direction='backward', trace=FALSE)
+summary(mlr3)
+
+par(mfrow=c(2,2))
+plot(mlr3)
+
+par(mfrow=c(2,2))
+plot(roc(complete_train_data$TARGET_FLAG,  predict(m1b, complete_train_data, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 1')
+plot(roc(complete_train_data$TARGET_FLAG,  predict(m2b, complete_train_data, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 2')
+plot(roc(complete_train_data$TARGET_FLAG,  predict(m3b, complete_train_data, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 3')
+plot(roc(complete_train_data$TARGET_FLAG,  predict(m4b, complete_train_data, interval = "prediction")), print.auc = TRUE, main='ROC Curve Model 4')
+
+CM1 <- confusionMatrix(as.factor(as.integer(fitted(m1b) > .5)), as.factor(m1b$y), positive = "1")
+CM2 <- confusionMatrix(as.factor(as.integer(fitted(m2b) > .5)), as.factor(m2b$y), positive = "1")
+CM3 <- confusionMatrix(as.factor(as.integer(fitted(m3b) > .5)), as.factor(m3b$y), positive = "1")
+CM4 <- confusionMatrix(as.factor(as.integer(fitted(m4b) > .5)), as.factor(m4b$y), positive = "1")
+
+Roc1 <- roc(complete_train_data$TARGET_FLAG,  predict(m1b, complete_train_data, interval = "prediction"))
+Roc2 <- roc(complete_train_data$TARGET_FLAG,  predict(m2b, complete_train_data, interval = "prediction"))
+Roc3 <- roc(complete_train_data$TARGET_FLAG,  predict(m3b, complete_train_data, interval = "prediction"))
+Roc4 <- roc(complete_train_data$TARGET_FLAG,  predict(m4b, complete_train_data, interval = "prediction"))
+
+metrics1 <- c(CM1$overall[1], "Class. Error Rate" = 1 - as.numeric(CM1$overall[1]), CM1$byClass[c(1, 2, 5, 7)], AUC = Roc1$auc)
+metrics2 <- c(CM2$overall[1], "Class. Error Rate" = 1 - as.numeric(CM2$overall[1]), CM2$byClass[c(1, 2, 5, 7)], AUC = Roc2$auc)
+metrics3 <- c(CM3$overall[1], "Class. Error Rate" = 1 - as.numeric(CM3$overall[1]), CM3$byClass[c(1, 2, 5, 7)], AUC = Roc3$auc)
+metrics4 <- c(CM4$overall[1], "Class. Error Rate" = 1 - as.numeric(CM4$overall[1]), CM4$byClass[c(1, 2, 5, 7)], AUC = Roc4$auc)
+
+kable(cbind(metrics1, metrics2, metrics3, metrics4), col.names = c("Model 1", "Model 2", "Model 3", "Model 4"))  %>% 
+  kable_styling(full_width = T)
+
+m1.summary = summary(mlr1)
+m2.summary = summary(mlr2)
+m3.summary = summary(mlr3)
+
+m1.square = m1.summary$r.squared
+m2.square = m2.summary$r.squared
+m3.square = m3.summary$r.squared
+
+m1.fstat = as.numeric(m1.summary$fstatistic[1])
+m2.fstat = as.numeric(m2.summary$fstatistic[1])
+m3.fstat = as.numeric(m3.summary$fstatistic[1])
+
+m1.r = m1.summary$adj.r.squared
+m2.r = m2.summary$adj.r.squared
+m3.r = m3.summary$adj.r.squared
+
+metrics1 = c('R Square'=m1.square, 'F Stat'=m1.fstat, 'R Adj Square'=m1.r)
+metrics2 = c('R Square'=m2.square, 'F Stat'=m2.fstat, 'R Square'=m2.r)
+metrics3 = c('R Square'=m3.square, 'F Stat'=m3.fstat, 'R Square'=m3.r)
+
+kable(cbind(metrics1, metrics2, metrics3), col.names = c("Model 1", "Model 2", "Model 3"))  %>% 
+  kable_styling(full_width = T)
+
+Eval_Data$BLUEBOOK = as.numeric(Eval_Data$BLUEBOOK)
+Eval_Data$INCOME = as.numeric(Eval_Data$INCOME)
+Eval_Data$HOME_VAL = as.numeric(Eval_Data$HOME_VAL)
+Eval_Data$OLDCLAIM = as.numeric(Eval_Data$OLDCLAIM)
+Eval_Data$TARGET_AMT = NULL
+
+Eval_Data$INDEX = NULL
+prediction_binary = predict(m4b, Eval_Data, type="response")
+Eval_Data$TARGET_FLAG = prediction_binary
+Eval_Data$TARGET_FLAG <- ifelse(Eval_Data$TARGET_FLAG > 0.5, 1, 0)
+
 prediction_linear = predict(mlr3, Eval_Data)
 Eval_Data$TARGET_AMT = prediction_linear
 write.csv(Eval_Data, 'predictions.csv')
