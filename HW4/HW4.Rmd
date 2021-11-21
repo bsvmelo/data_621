@@ -62,6 +62,8 @@ if(!require('MASS')) (install.packages('MASS'))
 if(!require('caret')) (install.packages('caret'))
 if(!require('stats')) (install.packages('stats'))
 if(!require('randomForest')) (install.packages('randomForest'))
+if(!require('kableExtra')) (install.packages('kableExtra'))
+
 library(DataExplorer)
 
 ```
@@ -328,9 +330,57 @@ Using the backward step function we can see that the model choose **MSTATUS**, *
 # Model Selection
 
 ## Multi Linear Regression
+
 We will be looking at all the models created and looking at the metrics like R Squared Value, RMSE, F-Statistics, and Residual Plots in order to determine which is the best model which represents our data. We will then compare the best model selected against the evaluation data set in order to see if the model truly represents the dataset
 
 ```{r}
-m1.summary = summary(MV1)
-m2.summary = summary(MV2_step)
+m1.summary = summary(mlr1)
+m2.summary = summary(mlr2)
+m3.summary = summary(mlr3)
 ```
+
+```{r}
+m1.square = m1.summary$r.squared
+m2.square = m2.summary$r.squared
+m3.square = m3.summary$r.squared
+```
+
+```{r f-statistics}
+m1.fstat = as.numeric(m1.summary$fstatistic[1])
+m2.fstat = as.numeric(m2.summary$fstatistic[1])
+m3.fstat = as.numeric(m3.summary$fstatistic[1])
+```
+
+```{r rsquare}
+m1.r = m1.summary$adj.r.squared
+m2.r = m2.summary$adj.r.squared
+m3.r = m3.summary$adj.r.squared
+```
+
+```{r}
+metrics1 = c('R Square'=m1.square, 'F Stat'=m1.fstat, 'R Adj Square'=m1.r)
+metrics2 = c('R Square'=m2.square, 'F Stat'=m2.fstat, 'R Square'=m2.r)
+metrics3 = c('R Square'=m3.square, 'F Stat'=m3.fstat, 'R Square'=m3.r)
+```
+
+```{r echo=FALSE}
+kable(cbind(metrics1, metrics2, metrics3), col.names = c("Model 1", "Model 2", "Model 3"))  %>% 
+  kable_styling(full_width = T)
+```
+
+Based on the table above the the best model would be model 3 based on the summary and the residual vs fitted plot
+
+## Predictions
+
+Multi Linear Model:
+```{r}
+Eval_Data$BLUEBOOK = as.numeric(Eval_Data$BLUEBOOK)
+prediction_linear = predict(mlr3, Eval_Data)
+Eval_Data$TARGET_AMT = prediction_linear
+write.csv(Eval_Data, 'predictions.csv')
+```
+
+
+
+
+
