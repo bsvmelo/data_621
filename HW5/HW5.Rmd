@@ -1,0 +1,61 @@
+---
+title: "DATA 621 Homework 5"
+author: "Critical Thinking Group 1"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 4
+  html_document:
+    toc: yes
+    toc_depth: '2'
+    smart: no
+  word_document:
+    toc: yes
+    toc_depth: '2'
+---
+\pagebreak
+\begin{center}
+\bigskip
+\bigskip
+\bigskip
+Prepared for:\\
+\medskip
+Prof. Dr. Nasrin Khansari\\
+\smallskip
+City University of New York, School of Professional Studies - Data 621\\
+\bigskip
+DATA 621 – Business Analytics and Data Mining\\
+\medskip
+Home Work 5\\
+\medskip
+Prepared by:\\
+\medskip
+Critical Thinking Group  1\\ 
+\medskip
+Vic Chan\\ 
+\smallskip
+Gehad Gad\\
+\smallskip
+Evan McLaughlin\\  
+\smallskip
+Bruno de Melo\\
+\smallskip
+Anjal Hussan\\
+\smallskip
+Zhouxin Shi\\
+\smallskip
+Sie Siong Wong\\
+\end{center}
+
+\pagebreak
+
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+if (!require('ggplot2')) (install.packages('ggplot2'))
+
+```
+
+\newpage
+
+# Introduction
