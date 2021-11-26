@@ -6,7 +6,13 @@ output:
   pdf_document:
     toc: yes
     toc_depth: 4
-
+  html_document:
+    toc: yes
+    toc_depth: '2'
+    smart: no
+  word_document:
+    toc: yes
+    toc_depth: '2'
 ---
 \pagebreak
 \begin{center}
@@ -44,18 +50,37 @@ Sie Siong Wong\\
 
 \pagebreak
 
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+if (!require('ggplot2')) (install.packages('ggplot2'))
+if(!require('dplyr')) (install.packages('dplyr'))
+if(!require('tidyverse')) (install.packages('tidyverse'))
+if(!require('purrr')) (install.packages('purrr'))
+if(!require('mice')) (install.packages('mice'))
+if(!require('DataExplorer')) (install.packages('DataExplorer'))
+if(!require('MASS')) (install.packages('MASS'))
+if(!require('caret')) (install.packages('caret'))
+if(!require('stats')) (install.packages('stats'))
+if(!require('pROC')) (install.packages('pROC'))
+if(!require('kableExtra')) (install.packages('kableExtra'))
+if(!require('gridExtra')) (install.packages('gridExtra'))
+if(!require('ggcorrplot')) (install.packages("ggcorrplot"))
+if(!require('fitdistrplus')) (install.packages("fitdistrplus"))
+if (!require('pacman')) (install.packages('pacman'))
+pacman::p_load('ggplot2', 'reporttools', 'dplyr', 'MASS', 'dplyr', 'psych', 'DataExplorer', 'mice', 'pscl', 'pander', 'tinytex')
+```
+
+
 \newpage
 
 # Introduction
+
 ```{r, message=F, warning=FALSE, echo=FALSE}
-if (!require('pacman')) (install.packages('pacman'))
-pacman::p_load('ggplot2', 'reporttools', 'dplyr', 'MASS', 'dplyr', 'psych', 'DataExplorer', 'mice', 'pscl', 'pander', 'tinytex')
-
-
 theme_update(plot.title = element_text(hjust = 0.5), 
              axis.text.x = element_text(angle = 90, hjust = 1))
-train <- read.csv('https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW5/wine-training-data.csv', header=T)
-evaluation_data <- read.csv('https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW5/wine-evaluation-data.csv', header=T)
+
+train_data <- read.csv('https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW5/wine-training-data.csv', header=T)
+eval_data <- read.csv('https://raw.githubusercontent.com/ahussan/DATA_621_Group1/main/HW5/wine-evaluation-data.csv', header=T)
 ```
 
 ## Problem
@@ -68,29 +93,88 @@ The objective is to build a count regression model to predict the number of case
 
 \newpage
 
-## 1. DATA EXPLORATION
+# Data Exploration  
 
 Below we'll display a few basic EDA techniques to gain insight into our wine dataset.
 
-### Basic Statistics
+## Basic Statistics
 
 The data is 1.3 Mb in size. There are 12,795 rows and 15 columns (features). Of all 15 columns, 0 are discrete, 15 are continuous, and 0 are all missing. There are 8,200 missing values out of 191,925 data points.
 
 ```{r, echo=FALSE, warning=FALSE}
-summary <- describe(train[,c(1:15)])[,c(2:5,8,9,11,12)]
+summary <- describe(train_data[,c(1:15)])[,c(2:5,8,9,11,12)]
 #knitr::kable(summary)
 print(summary)
 ```
 
-### Histogram of Variables
+## Histogram of Variables
 
 ```{r, echo=FALSE, warning=FALSE}
-plot_histogram(train)
+plot_histogram(train_data)
 ```
 
-### Relationship of Predictors to Target
+## Relationship of Predictors to Target
 
 ```{r, echo=FALSE, warning=FALSE}
-plot_scatterplot(train[2:15,], "TARGET")
+plot_scatterplot(train_data[2:15,], "TARGET")
 ```
+
+
+# Data Preparation
+
+## Identify Missing Values
+
+We can see that the same variables for both train data set and evaluation data set contains missing values. The variable that contains the most missing values is the **STAR** followed by **Sulphates**, **Alcohol**, **ResidualSugar**, **TotalSulfurDioxide**, **FreeSulfurDioxide**, **Chlorides**, and **pH**.
+
+````{r, echo=FALSE, warning=FALSE}
+# Missing values in train data set
+colSums(is.na(train_data[-c(1)])) %>% data.frame() %>% `colnames<-`("Missing Count") %>% tibble::rownames_to_column("Train Data Set Variales") 
+plot_missing(train_data[-c(1)])
+
+# Missing values in evaluation data set
+colSums(is.na(eval_data[-c(1)])) %>% data.frame() %>% `colnames<-`("Missing Count") %>% tibble::rownames_to_column("Train Data Set Variales")
+plot_missing(eval_data[-c(1,2)])
+```
+
+## Impute Missing Values
+
+We assume the missing data are Missing at Random and choose to impute. The reason we want to impute the missing data rather than replacing with mean or median because of large number of missing values. If we're replacing with mean or median on the large number of missing values, can result in loss of variation in data. We're imputing the missing data using the MICE package. The method of predictive mean matching (PMM) is selected for continuous variables.
+
+```{r, echo=FALSE, warning=FALSE}
+# Impute both train and evaluation data set
+impute_train_data <- mice(train_data[-c(1)], m=5, maxit=20, method='pmm', seed=321, print = FALSE)
+densityplot(impute_train_data) 
+impute_eval_data <- mice(eval_data[-c(1)], m=5, maxit=20, method='pmm', seed=321, print = FALSE)
+densityplot(impute_eval_data)
+```
+
+Next, we take average values of the 5 imputed data set as a final train data set used for building models. 
+
+```{r, echo=FALSE, warning=FALSE}
+# Combine all 5 imputed data set and calculate the average value
+complete_train_data <- (complete(impute_train_data,1) + complete(impute_train_data,2) + complete(impute_train_data,3) + complete(impute_train_data,4) + complete(impute_train_data,5))/5
+
+complete_eval_data <- (complete(impute_eval_data,1) + complete(impute_eval_data,2) + complete(impute_eval_data,3) + complete(impute_eval_data,4) + complete(impute_eval_data,5))/5
+
+# Plot box plot for each variable
+complete_train_data %>% gather(variable, value) %>% 
+  ggplot(aes(x=variable, y=value)) + 
+  geom_boxplot(aes(fill=variable)) + facet_wrap( ~ variable, scales="free") + 
+  theme(legend.position = "none", axis.text.y=element_blank()) + coord_flip()
+
+# Plot density plot for each variable
+complete_train_data %>% plot_density()
+
+```
+
+Because we'll use the Poisson or Negative Binomial regression to build count regression models in GLM approach, transformation for each variable to make them looks normal is not required. Diagnostics of actual outliers or influential points can be identified in the build models section through plots such as residuals vs fitted, standardized residuals vs fitted, etc.
+
+
+# Build Models
+
+
+# Model Selection
+
+
+# Appendix
 
