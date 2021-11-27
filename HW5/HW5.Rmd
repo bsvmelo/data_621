@@ -114,11 +114,24 @@ plot_histogram(train_data)
 ```
 
 ## Relationship of Predictors to Target
+It is useful to assess the plots of each variable against the target variable. We do so below with a couple of scatterplots.
 
 ```{r, echo=FALSE, warning=FALSE}
 plot_scatterplot(train_data[2:15,], "TARGET")
-```
+featurePlot(train_data[,2:ncol(train_data)], train_data[,1], pch = 20)
 
+```
+## Boxplots
+After observing our distributions, we can next assess the variables' relationship with our target variable (TARGET). It would be useful to establish the 
+```{r}
+bp_train <- train_data %>% 
+  gather(key = 'variable', value = 'value')
+
+ggplot(bp_train, aes(variable, value)) + 
+  geom_boxplot() + 
+  facet_wrap(. ~variable, scales='free', ncol=6)
+  
+```
 
 # Data Preparation
 
