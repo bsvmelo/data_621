@@ -229,6 +229,39 @@ ps2 <- glm(TARGET ~ VolatileAcidity + TotalSulfurDioxide + Alcohol +
 summary(ps2)
 ```
 
+**Baseline model**
+
+```{r}
+Model3 <- glm(TARGET ~ ., complete_train_data, family = poisson(link = "log"))
+summary(Model3)
+```
+
+
+**quasi-Poisson Model**
+
+
+```{r}
+Model4 <- glm(TARGET ~ ., family=quasipoisson, complete_train_data)
+summary(Model4)
+```
+
+
+**Negative binomial regression**
+
+
+```{r}
+Model5 <- glm.nb(TARGET ~ ., data = complete_train_data)
+summary(Model5)
+```
+
+**Zero Inflated Count Models**
+
+```{r}
+Model6 <- zeroinfl(TARGET ~ ., data = complete_train_data)
+summary(Model6)
+```
+
+
 # Model Selection
 
 
