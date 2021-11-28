@@ -106,6 +106,10 @@ summary <- describe(train_data[,c(1:15)])[,c(2:5,8,9,11,12)]
 #knitr::kable(summary)
 print(summary)
 ```
+It's useful to note a couple of things right off the bat with regard to our dataset:
+- There are several variables that have negative values.
+- ResidualSugar, Chlorides, FreeSulfurDioxide, and TotalSulfurDioxide all have quite a few missing values that we are going to need to deal with in order to assess the variables.
+- The Index column is useless and can be ignored.
 
 ## Histogram of Variables
 
@@ -148,6 +152,13 @@ plot_missing(train_data[-c(1)])
 colSums(is.na(eval_data[-c(1)])) %>% data.frame() %>% `colnames<-`("Missing Count") %>% tibble::rownames_to_column("Train Data Set Variales")
 plot_missing(eval_data[-c(1,2)])
 ```
+Our chart above does a good job of highlighting the missing values that will no doubt impact our analysis if we don't deal with them. In particular:
+
+-   STARS is missing 25% of its records. We could guess that the wines haven't been assessed and rated by experts. 
+-   Sulphates is missing 9% of its records. 
+-   Alcohol is missing 5% of its records. It is unlikely that a 0 here would indicate no alcohol in the wine, given that it's wine, so we can assume these values are missing. 
+-   ResidualSugar is missing 5% of its records. There are some records that have 0 for ResidualSugar so these flagged records most certainly have missing values.
+-   A few more variables experiences missing values as well such as TotalSulfurDioxide (<5%), FreeSulfurDioxide (<5%), Chlorides (<5%), and pH (<4%).
 
 ## Impute Missing Values
 
@@ -169,7 +180,7 @@ complete_train_data <- (complete(impute_train_data,1) + complete(impute_train_da
 
 complete_eval_data <- (complete(impute_eval_data,1) + complete(impute_eval_data,2) + complete(impute_eval_data,3) + complete(impute_eval_data,4) + complete(impute_eval_data,5))/5
 
-# Plot box plot for each variable
+# Box plot for each variable
 complete_train_data %>% gather(variable, value) %>% 
   ggplot(aes(x=variable, y=value)) + 
   geom_boxplot(aes(fill=variable)) + facet_wrap( ~ variable, scales="free") + 
@@ -182,9 +193,41 @@ complete_train_data %>% plot_density()
 
 Because we'll use the Poisson or Negative Binomial regression to build count regression models in GLM approach, transformation for each variable to make them looks normal is not required. Diagnostics of actual outliers or influential points can be identified in the build models section through plots such as residuals vs fitted, standardized residuals vs fitted, etc.
 
+## Identifying Multicollinearity
+```{r}
+stack(sort(cor(complete_train_data[,1], complete_train_data[,2:ncol(complete_train_data)])[,], decreasing=TRUE))
+correlation = cor(complete_train_data, use = 'pairwise.complete.obs')
+corrplot(correlation, 'ellipse', type = 'lower', order = 'hclust',col=brewer.pal(n=8, name="RdYlBu"))
+```
+
+After our EDA and Data Prep, we can render some judgments on the dataset, including that there are some variables with a weak enough relationship with our TARGET that we can plan to drop them. We also need to plan on dealing with the many outliers that could skew our models and pay close attention to multicollinearity, especially as it relates to the relationship between STARS and LabelAppeal. These two features also happen to have the strongest correlation with the TARGET.
 
 # Build Models
 
+Poisson Model 1
+```{r}
+
+ps1 <- glm(TARGET ~ FixedAcidity + VolatileAcidity + CitricAcid + ResidualSugar + 
+Chlorides + FreeSulfurDioxide + TotalSulfurDioxide + Density +
+pH + Sulphates + Alcohol + 
+                as.factor(LabelAppeal) +
+                as.factor(AcidIndex) +
+                as.factor(STARS),
+              data=complete_train_data, 
+              family=poisson)
+summary(ps1)
+
+```
+Poisson Model 2
+```{r}
+ps2 <- glm(TARGET ~ VolatileAcidity + TotalSulfurDioxide + Alcohol + 
+                as.factor(LabelAppeal) + 
+                as.factor(AcidIndex) + 
+                as.factor(STARS),
+              data=complete_train_data, 
+              family=poisson)
+summary(ps2)
+```
 
 # Model Selection
 
