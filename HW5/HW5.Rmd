@@ -67,6 +67,7 @@ if(!require('gridExtra')) (install.packages('gridExtra'))
 if(!require('ggcorrplot')) (install.packages("ggcorrplot"))
 if(!require('fitdistrplus')) (install.packages("fitdistrplus"))
 if (!require('pacman')) (install.packages('pacman'))
+if (!require('GGally')) (install.packages('GGally'))
 pacman::p_load('ggplot2', 'reporttools', 'dplyr', 'MASS', 'dplyr', 'psych', 'DataExplorer', 'mice', 'pscl', 'pander', 'tinytex')
 ```
 
@@ -117,14 +118,21 @@ It's useful to note a couple of things right off the bat with regard to our data
 plot_histogram(train_data)
 ```
 
+Based on the histograms we can see that a lot of the variables distributions looks to be a normal distribution. We can see that **AcidIndex**, **STARS**, and **TARGET** are a bit skewed. One thing to note is that the **TARGET** variable has a lot of 0 cases sold. These 0 **TARGET** variables will need to be cleaned during the data prep phase as they can skew the results of the model.
+
 ## Relationship of Predictors to Target
-It is useful to assess the plots of each variable against the target variable. We do so below with a couple of scatterplots.
+It is useful to assess the plots of each variable against the target variable. Using the GGPairs function from GGally we can plot someof the variables of interest to see if any of the variables correlates with the response variable **TARGET**. We will be making sure to include the variables **STARS** and **LabelAppeal** as it is believed that these two variables affect sales numbers
 
 ```{r, echo=FALSE, warning=FALSE}
-plot_scatterplot(train_data[2:15,], "TARGET")
-featurePlot(train_data[,2:ncol(train_data)], train_data[,1], pch = 20)
-
+# plot_scatterplot(train_data[2:15,], "TARGET")
+# featurePlot(train_data[,2:ncol(train_data)], train_data[,1], pch = 20)
+train_data %>%
+  dplyr::select(TARGET, STARS, LabelAppeal, Alcohol) %>%
+  ggpairs()
 ```
+
+We can see that **STARS** and **Alcohol** has a bit of correlation with **TARGET**.
+
 ## Boxplots
 After observing our distributions, we can next assess the variables' relationship with our target variable (TARGET). It would be useful to establish the 
 ```{r}
@@ -136,6 +144,8 @@ ggplot(bp_train, aes(variable, value)) +
   facet_wrap(. ~variable, scales='free', ncol=6)
   
 ```
+
+When looking at the boxplot for **TARGET** we can see a very different picture compared to looking at the histogram. In the histogram it shows all the 0 **TARGETS** which can skew the modeling results while in the histogram one can not easily point that out. This is the reason why we need to look at the data in mulitple different ways.
 
 # Data Preparation
 
