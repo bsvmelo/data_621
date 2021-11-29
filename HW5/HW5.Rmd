@@ -214,7 +214,7 @@ After our EDA and Data Prep, we can render some judgments on the dataset, includ
 
 # Build Models
 
-Poisson Model 1
+## Poisson Model 1
 ```{r, echo=FALSE, warning=FALSE}
 
 Model1 <- glm(TARGET ~ FixedAcidity + VolatileAcidity + CitricAcid + ResidualSugar + 
@@ -229,7 +229,7 @@ summary(Model1)
 
 ```
 
-Poisson Model 2
+## Poisson Model 2
 ```{r, echo=FALSE, warning=FALSE}
 Model2 <- glm(TARGET ~ VolatileAcidity + TotalSulfurDioxide + Alcohol + 
                 as.factor(LabelAppeal) + 
@@ -240,7 +240,7 @@ Model2 <- glm(TARGET ~ VolatileAcidity + TotalSulfurDioxide + Alcohol +
 summary(Model2)
 ```
 
-**Baseline model**
+## Baseline model
 
 ```{r, echo=FALSE, warning=FALSE}
 Model3 <- glm(TARGET ~ ., complete_train_data, family = poisson(link = "log"))
@@ -248,7 +248,7 @@ summary(Model3)
 ```
 
 
-**quasi-Poisson Model**
+## quasi-Poisson Model
 
 
 ```{r, echo=FALSE, warning=FALSE}
@@ -257,7 +257,7 @@ summary(Model4)
 ```
 
 
-**Negative binomial regression**
+## Negative binomial regression
 
 
 ```{r, echo=FALSE, warning=FALSE}
@@ -265,7 +265,7 @@ Model5 <- glm.nb(TARGET ~ ., data = complete_train_data)
 summary(Model5)
 ```
 
-**Zero Inflated Count Models**
+## Zero Inflated Count Models
 
 ```{r, echo=FALSE, warning=FALSE}
 Model6 <- zeroinfl(TARGET ~ ., data = complete_train_data)
