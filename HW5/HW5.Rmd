@@ -204,7 +204,7 @@ complete_train_data %>% plot_density()
 Because we'll use the Poisson or Negative Binomial regression to build count regression models in GLM approach, transformation for each variable to make them looks normal is not required. Diagnostics of actual outliers or influential points can be identified in the build models section through plots such as residuals vs fitted, standardized residuals vs fitted, etc.
 
 ## Identifying Multicollinearity
-```{r}
+```{r, echo=FALSE, warning=FALSE}
 stack(sort(cor(complete_train_data[,1], complete_train_data[,2:ncol(complete_train_data)])[,], decreasing=TRUE))
 correlation = cor(complete_train_data, use = 'pairwise.complete.obs')
 corrplot(correlation, method='ellipse', type = 'lower', order = 'hclust',col=brewer.pal(n=8, name="RdYlBu"))
@@ -215,7 +215,7 @@ After our EDA and Data Prep, we can render some judgments on the dataset, includ
 # Build Models
 
 Poisson Model 1
-```{r}
+```{r, echo=FALSE, warning=FALSE}
 
 Model1 <- glm(TARGET ~ FixedAcidity + VolatileAcidity + CitricAcid + ResidualSugar + 
 Chlorides + FreeSulfurDioxide + TotalSulfurDioxide + Density +
@@ -230,7 +230,7 @@ summary(Model1)
 ```
 
 Poisson Model 2
-```{r}
+```{r, echo=FALSE, warning=FALSE}
 Model2 <- glm(TARGET ~ VolatileAcidity + TotalSulfurDioxide + Alcohol + 
                 as.factor(LabelAppeal) + 
                 as.factor(AcidIndex) + 
@@ -242,7 +242,7 @@ summary(Model2)
 
 **Baseline model**
 
-```{r}
+```{r, echo=FALSE, warning=FALSE}
 Model3 <- glm(TARGET ~ ., complete_train_data, family = poisson(link = "log"))
 summary(Model3)
 ```
@@ -251,7 +251,7 @@ summary(Model3)
 **quasi-Poisson Model**
 
 
-```{r}
+```{r, echo=FALSE, warning=FALSE}
 Model4 <- glm(TARGET ~ ., family=quasipoisson, complete_train_data)
 summary(Model4)
 ```
@@ -260,14 +260,14 @@ summary(Model4)
 **Negative binomial regression**
 
 
-```{r}
+```{r, echo=FALSE, warning=FALSE}
 Model5 <- glm.nb(TARGET ~ ., data = complete_train_data)
 summary(Model5)
 ```
 
 **Zero Inflated Count Models**
 
-```{r}
+```{r, echo=FALSE, warning=FALSE}
 Model6 <- zeroinfl(TARGET ~ ., data = complete_train_data)
 summary(Model6)
 ```
@@ -277,7 +277,7 @@ summary(Model6)
 
 To aid in model selection, let's test each of our models agains the holdout validation set. 
 
-```{r}
+```{r, echo=FALSE, warning=FALSE}
 
 getMAE <- function(x) {
     mean(abs(complete_train_data$TARGET - x))
@@ -315,7 +315,7 @@ knitr::kable(results)
 
 In the table above, we see a preference for our Zero Inflated Count Model. We'll make our predictions using our the Zero Inflated Count model which is Model6
 
-```{r}
+```{r, echo=FALSE, warning=FALSE}
 summary(Model6)
 ```
 
@@ -323,7 +323,7 @@ summary(Model6)
 
 We make our final predictions, create a dataframe with the prediction. We see that our predictions have a similar shape to our training Target variable.  
 
-```{r}
+```{r, echo=FALSE, warning=FALSE}
 finalpreds <- predict(Model6, complete_eval_data)
 finaldf <- cbind(TARGET_FLAG=finalpreds)
 hist(finalpreds)
