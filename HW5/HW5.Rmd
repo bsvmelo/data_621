@@ -68,7 +68,7 @@ if(!require('ggcorrplot')) (install.packages("ggcorrplot"))
 if(!require('fitdistrplus')) (install.packages("fitdistrplus"))
 if (!require('pacman')) (install.packages('pacman'))
 if (!require('GGally')) (install.packages('GGally'))
-pacman::p_load('ggplot2', 'reporttools', 'dplyr', 'MASS', 'dplyr', 'psych', 'DataExplorer', 'mice', 'pscl', 'pander', 'tinytex')
+pacman::p_load('ggplot2', 'reporttools', 'dplyr', 'MASS', 'dplyr', 'psych', 'DataExplorer', 'mice', 'pscl', 'pander', 'tinytex', 'ggcorrplot')
 ```
 
 
@@ -207,7 +207,7 @@ Because we'll use the Poisson or Negative Binomial regression to build count reg
 ```{r}
 stack(sort(cor(complete_train_data[,1], complete_train_data[,2:ncol(complete_train_data)])[,], decreasing=TRUE))
 correlation = cor(complete_train_data, use = 'pairwise.complete.obs')
-corrplot(correlation, 'ellipse', type = 'lower', order = 'hclust',col=brewer.pal(n=8, name="RdYlBu"))
+#corrplot(correlation, method='ellipse', type = 'lower', order = 'hclust',col=brewer.pal(n=8, name="RdYlBu"))
 ```
 
 After our EDA and Data Prep, we can render some judgments on the dataset, including that there are some variables with a weak enough relationship with our TARGET that we can plan to drop them. We also need to plan on dealing with the many outliers that could skew our models and pay close attention to multicollinearity, especially as it relates to the relationship between STARS and LabelAppeal. These two features also happen to have the strongest correlation with the TARGET.
@@ -217,7 +217,7 @@ After our EDA and Data Prep, we can render some judgments on the dataset, includ
 Poisson Model 1
 ```{r}
 
-ps1 <- glm(TARGET ~ FixedAcidity + VolatileAcidity + CitricAcid + ResidualSugar + 
+Model1 <- glm(TARGET ~ FixedAcidity + VolatileAcidity + CitricAcid + ResidualSugar + 
 Chlorides + FreeSulfurDioxide + TotalSulfurDioxide + Density +
 pH + Sulphates + Alcohol + 
                 as.factor(LabelAppeal) +
@@ -225,18 +225,19 @@ pH + Sulphates + Alcohol +
                 as.factor(STARS),
               data=complete_train_data, 
               family=poisson)
-summary(ps1)
+summary(Model1)
 
 ```
+
 Poisson Model 2
 ```{r}
-ps2 <- glm(TARGET ~ VolatileAcidity + TotalSulfurDioxide + Alcohol + 
+Model2 <- glm(TARGET ~ VolatileAcidity + TotalSulfurDioxide + Alcohol + 
                 as.factor(LabelAppeal) + 
                 as.factor(AcidIndex) + 
                 as.factor(STARS),
               data=complete_train_data, 
               family=poisson)
-summary(ps2)
+summary(Model2)
 ```
 
 **Baseline model**
@@ -273,6 +274,61 @@ summary(Model6)
 
 
 # Model Selection
+
+To aid in model selection, let's test each of our models agains the holdout validation set. 
+
+```{r}
+
+getMAE <- function(x) {
+    mean(abs(complete_train_data$TARGET - x))
+}
+getRMSE <- function(x) {
+    sqrt(mean((complete_train_data$TARGET - x)^2))
+}
+results <- data.frame(Model = c("Poisson1",
+                                "Poisson2",
+                                "Baseline-Model",
+                                "quasi-Poisson-Model",
+                                "Negative-binomial-regression",
+                                "Zero-Inflated-Count-Models"), 
+                     MAE = c(getMAE(predict.lm(Model1, complete_train_data)),
+                             getMAE(predict.lm(Model2, complete_train_data)),
+                             getMAE(predict.lm(Model3, complete_train_data)),
+                             getMAE(predict.lm(Model4, complete_train_data)),
+                             getMAE(predict(Model5, complete_train_data,
+                                            type="response")),
+                             getMAE(predict(Model6, complete_train_data,
+                                            type="response"))
+                             ),
+                     RMSE = c(getRMSE(predict.lm(Model1, complete_train_data)),
+                              getRMSE(predict.lm(Model2, complete_train_data)),
+                              getRMSE(predict.lm(Model3, complete_train_data)),
+                              getRMSE(predict.lm(Model4, complete_train_data)),
+                              getRMSE(predict(Model5, complete_train_data,
+                                            type="response")),
+                              getRMSE(predict(Model6, complete_train_data,
+                                            type="response"))
+                              )
+)
+knitr::kable(results)
+```
+
+In the table above, we see a preference for our Zero Inflated Count Model. We'll make our predictions using our the Zero Inflated Count model which is Model6
+
+```{r}
+summary(Model6)
+```
+
+## Make Predictions
+
+We make our final predictions, create a dataframe with the prediction. We see that our predictions have a similar shape to our training Target variable.  
+
+```{r}
+finalpreds <- predict(Model6, complete_eval_data)
+finaldf <- cbind(TARGET_FLAG=finalpreds)
+hist(finalpreds)
+write.csv(finaldf, 'HW5preds.csv', row.names = FALSE)
+```
 
 
 # Appendix
