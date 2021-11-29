@@ -275,7 +275,7 @@ summary(Model6)
 
 # Model Selection
 
-To aid in model selection, let's test each of our models agains the holdout validation set. 
+To aid in model selection, let's test each of our models agains the complete_train_data set. 
 
 ```{r, echo=FALSE, warning=FALSE}
 
