@@ -68,6 +68,13 @@ if(!require('ggcorrplot')) (install.packages("ggcorrplot"))
 if(!require('fitdistrplus')) (install.packages("fitdistrplus"))
 if (!require('pacman')) (install.packages('pacman'))
 if (!require('GGally')) (install.packages('GGally'))
+if(!require('randomForest')) (install.packages('randomForest'))
+library(corrplot)
+library(RColorBrewer)
+
+# install.packages('mice')
+# library(mice)
+
 pacman::p_load('ggplot2', 'reporttools', 'dplyr', 'MASS', 'dplyr', 'psych', 'DataExplorer', 'mice', 'pscl', 'pander', 'tinytex', 'ggcorrplot')
 ```
 
@@ -134,14 +141,15 @@ train_data %>%
 We can see that **STARS** and **Alcohol** has a bit of correlation with **TARGET**.
 
 ## Boxplots
-After observing our distributions, we can next assess the variables' relationship with our target variable (TARGET). It would be useful to establish the 
-```{r}
+After observing our distributions, we can next assess the variables' relationship with our target variable (TARGET).
+
+```{r, echo=FALSE, warning=FALSE}
 bp_train <- train_data %>% 
   gather(key = 'variable', value = 'value')
 
 ggplot(bp_train, aes(variable, value)) + 
   geom_boxplot() + 
-  facet_wrap(. ~variable, scales='free', ncol=6)
+  facet_wrap(. ~variable, scales='free', ncol=4)+ coord_flip()
   
 ```
 
@@ -153,7 +161,7 @@ When looking at the boxplot for **TARGET** we can see a very different picture c
 
 We can see that the same variables for both train data set and evaluation data set contains missing values. The variable that contains the most missing values is the **STAR** followed by **Sulphates**, **Alcohol**, **ResidualSugar**, **TotalSulfurDioxide**, **FreeSulfurDioxide**, **Chlorides**, and **pH**.
 
-````{r, echo=FALSE, warning=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 # Missing values in train data set
 colSums(is.na(train_data[-c(1)])) %>% data.frame() %>% `colnames<-`("Missing Count") %>% tibble::rownames_to_column("Train Data Set Variales") 
 plot_missing(train_data[-c(1)])
@@ -215,120 +223,157 @@ After our EDA and Data Prep, we can render some judgments on the dataset, includ
 # Build Models
 
 ## Poisson Model 1
-```{r, echo=FALSE, warning=FALSE}
-
-Model1 <- glm(TARGET ~ FixedAcidity + VolatileAcidity + CitricAcid + ResidualSugar + 
-Chlorides + FreeSulfurDioxide + TotalSulfurDioxide + Density +
-pH + Sulphates + Alcohol + 
-                as.factor(LabelAppeal) +
-                as.factor(AcidIndex) +
-                as.factor(STARS),
-              data=complete_train_data, 
-              family=poisson)
+We start with a quasi-Poisson model using all variables.
+```{r, echo=TRUE, warning=FALSE}
+Model1 <- glm(TARGET ~ ., data=complete_train_data,family=quasipoisson)
 summary(Model1)
 
 ```
 
-## Poisson Model 2
-```{r, echo=FALSE, warning=FALSE}
-Model2 <- glm(TARGET ~ VolatileAcidity + TotalSulfurDioxide + Alcohol + 
-                as.factor(LabelAppeal) + 
-                as.factor(AcidIndex) + 
-                as.factor(STARS),
-              data=complete_train_data, 
-              family=poisson)
-summary(Model2)
+We see that the dispersion parameter is close to 1, meaning this regression is close to a regular Poisson regression case.
+
+
+Using the F test, we check the significance of each of the predictors relative to the full model:
+
+```{r, echo=TRUE, warning=FALSE}
+drop1(Model1, test="F")
 ```
 
-## Baseline model
 
-```{r, echo=FALSE, warning=FALSE}
-Model3 <- glm(TARGET ~ ., complete_train_data, family = poisson(link = "log"))
+Non significant predictors will be dropped and a reduced model is estimated below.
+
+## Poisson Model 2
+This is the model with only the significant variables at the 5% level.
+
+```{r, echo=TRUE, warning=FALSE}
+Model2 <- glm(TARGET ~ VolatileAcidity + Chlorides + FreeSulfurDioxide + TotalSulfurDioxide + pH + Sulphates+ LabelAppeal+
+                AcidIndex + STARS,data=complete_train_data, family=quasipoisson)
+summary(Model2)
+```
+We see there is little practical difference between the two models.
+
+
+## Negative binomial regression 
+
+We also estimate a regression using a negative binomial regression.
+
+```{r, echo=TRUE, warning=FALSE}
+Model3 <- glm.nb(TARGET ~ ., complete_train_data)
 summary(Model3)
 ```
 
+## Zero Inflated Count Models
+Considering that the response data has a lot of zeros, we will also estimate a regression using zero inflated count models.
 
-## quasi-Poisson Model
-
-
-```{r, echo=FALSE, warning=FALSE}
-Model4 <- glm(TARGET ~ ., family=quasipoisson, complete_train_data)
+```{r, echo=TRUE, warning=FALSE}
+Model4<- zeroinfl(TARGET ~ ., data = complete_train_data)
 summary(Model4)
 ```
 
+As per our text book, we will also estimate a simplified version considering two components: non-count and count variables.
 
-## Negative binomial regression
 
-
-```{r, echo=FALSE, warning=FALSE}
-Model5 <- glm.nb(TARGET ~ ., data = complete_train_data)
+```{r, echo=TRUE, warning=FALSE}
+Model5 <- zeroinfl(TARGET ~ .|STARS, data = complete_train_data)
 summary(Model5)
 ```
 
-## Zero Inflated Count Models
 
-```{r, echo=FALSE, warning=FALSE}
-Model6 <- zeroinfl(TARGET ~ ., data = complete_train_data)
-summary(Model6)
-```
 
 
 # Model Selection
 
-To aid in model selection, let's test each of our models agains the complete_train_data set. 
+In order to select a model, we will compare various metrics for all five models using the training data set. We check models’ confusion matrix and its measures such as accuracy, classification error rate, precision, sensitivity, specificity, F1 score, AUC, and also MAE, RMSE, and R-squared.
 
-```{r, echo=FALSE, warning=FALSE}
 
-getMAE <- function(x) {
-    mean(abs(complete_train_data$TARGET - x))
-}
-getRMSE <- function(x) {
-    sqrt(mean((complete_train_data$TARGET - x)^2))
-}
-results <- data.frame(Model = c("Poisson1",
-                                "Poisson2",
-                                "Baseline-Model",
-                                "quasi-Poisson-Model",
-                                "Negative-binomial-regression",
-                                "Zero-Inflated-Count-Models"), 
-                     MAE = c(getMAE(predict.lm(Model1, complete_train_data)),
-                             getMAE(predict.lm(Model2, complete_train_data)),
-                             getMAE(predict.lm(Model3, complete_train_data)),
-                             getMAE(predict.lm(Model4, complete_train_data)),
-                             getMAE(predict(Model5, complete_train_data,
-                                            type="response")),
-                             getMAE(predict(Model6, complete_train_data,
-                                            type="response"))
-                             ),
-                     RMSE = c(getRMSE(predict.lm(Model1, complete_train_data)),
-                              getRMSE(predict.lm(Model2, complete_train_data)),
-                              getRMSE(predict.lm(Model3, complete_train_data)),
-                              getRMSE(predict.lm(Model4, complete_train_data)),
-                              getRMSE(predict(Model5, complete_train_data,
-                                            type="response")),
-                              getRMSE(predict(Model6, complete_train_data,
-                                            type="response"))
-                              )
-)
-knitr::kable(results)
+```{r echo=FALSE, message=FALSE, results=FALSE}
+# comparing all models using various measures
+
+pred1<-fitted(Model1)
+pred1<-ifelse(pred1>=8,8,pred1)
+CM1 <- confusionMatrix(as.factor(as.integer(pred1)), as.factor(Model1$y))
+
+
+pred2<-fitted(Model2)
+pred2<-ifelse(pred2>=8,8,pred2)
+CM2 <- confusionMatrix(as.factor(as.integer(pred2)), as.factor(Model2$y))
+
+pred3<-fitted(Model3)
+pred3<-ifelse(pred3>=8,8,pred3)
+CM3 <- confusionMatrix(as.factor(as.integer(pred3)), as.factor(Model3$y))
+
+CM4 <- confusionMatrix(as.factor(as.integer(fitted(Model4))), as.factor(Model4$y))
+
+CM5 <- confusionMatrix(as.factor(as.integer(fitted(Model5))), as.factor(Model5$y))
+
+# CM6 <- confusionMatrix(as.factor(as.integer(fitted(Model6))), as.factor(Model6$y))
+
+# pred6<-predict(Model6, complete_train_data,type="response")
+
+
+Roc1 <- multiclass.roc(complete_train_data$TARGET,  predict(Model1, complete_train_data, interval = "prediction"), 
+levels=base::levels(as.factor(complete_train_data$TARGET)))
+
+Roc2 <- multiclass.roc(complete_train_data$TARGET,  predict(Model2, complete_train_data, interval = "prediction"), 
+levels=base::levels(as.factor(complete_train_data$TARGET)))
+
+Roc3 <- multiclass.roc(complete_train_data$TARGET,  predict(Model3, complete_train_data, interval = "prediction"), 
+levels=base::levels(as.factor(complete_train_data$TARGET)))
+
+Roc4 <- multiclass.roc(complete_train_data$TARGET,  predict(Model4, complete_train_data, interval = "prediction"), 
+levels=base::levels(as.factor(complete_train_data$TARGET)))
+
+Roc5 <- multiclass.roc(complete_train_data$TARGET,  predict(Model5, complete_train_data, interval = "prediction"), 
+levels=base::levels(as.factor(complete_train_data$TARGET)))
+
+# Roc6 <- multiclass.roc(complete_train_data$TARGET,  predict(Model6, complete_train_data, interval = "prediction"), 
+# levels=base::levels(as.factor(complete_train_data$TARGET)))
+
+
+metrics1 <- c(CM1$overall[1], "Class. Error Rate" = 1 - as.numeric(CM1$overall[1]), "Sensitivity" = CM1$byClass[1], "Specificity" = CM1$byClass[2], "Precision" =  CM1$byClass[5] , "F1" =   CM1$byClass[7], AUC = Roc1$auc, "MAE" = MAE(fitted(Model1),Model1$y), "RMSE" = RMSE(fitted(Model1),Model1$y), "R2" = R2(fitted(Model1),Model1$y))
+
+metrics2 <- c(CM2$overall[1], "Class. Error Rate" = 1 - as.numeric(CM2$overall[1]), "Sensitivity" = CM2$byClass[1], "Specificity" = CM2$byClass[2], "Precision" =  CM2$byClass[5] , "F1" =   CM2$byClass[7], AUC = Roc2$auc, "MAE" = MAE(fitted(Model2),Model2$y), "RMSE" = RMSE(fitted(Model2),Model2$y), "R2" = R2(fitted(Model2),Model2$y))
+
+metrics3 <- c(CM3$overall[1], "Class. Error Rate" = 1 - as.numeric(CM3$overall[1]), "Sensitivity" = CM3$byClass[1], "Specificity" = CM3$byClass[2], "Precision" =  CM3$byClass[5] , "F1" =   CM3$byClass[7], AUC = Roc3$auc, "MAE" = MAE(fitted(Model3),Model3$y), "RMSE" = RMSE(fitted(Model3),Model3$y), "R2" = R2(fitted(Model3),Model3$y))
+
+metrics4 <- c(CM4$overall[1], "Class. Error Rate" = 1 - as.numeric(CM4$overall[1]), "Sensitivity" = CM4$byClass[1], "Specificity" = CM4$byClass[2], "Precision" =  CM4$byClass[5] , "F1" =   CM4$byClass[7], AUC = Roc4$auc, "MAE" = MAE(fitted(Model4),Model4$y), "RMSE" = RMSE(fitted(Model4),Model4$y), "R2" = R2(fitted(Model4),Model4$y))
+
+metrics5 <- c(CM5$overall[1], "Class. Error Rate" = 1 - as.numeric(CM5$overall[1]), "Sensitivity" = CM5$byClass[1], "Specificity" = CM5$byClass[2], "Precision" =  CM5$byClass[5] , "F1" =   CM5$byClass[7], AUC = Roc5$auc, "MAE" = MAE(fitted(Model5),Model5$y), "RMSE" = RMSE(fitted(Model5),Model5$y), "R2" = R2(fitted(Model5),Model5$y))
+
+
 ```
 
-In the table above, we see a preference for our Zero Inflated Count Model. We'll make our predictions using our the Zero Inflated Count model which is Model6
 
-```{r, echo=FALSE, warning=FALSE}
-summary(Model6)
+
+```{r metrics table, echo=FALSE, eval=TRUE}
+kable(cbind(metrics1, metrics2, metrics3, metrics4, metrics5), col.names = c("Model 1", "Model 2", "Model 3", "Model 4", "Model 5"))  %>% 
+  kable_styling(full_width = T)
 ```
+
+
+In the table above, we see that a our Zero Inflated Count Models have the highest accuracy, R-squared and lowest MAE and RMSE. We'll make our predictions using the Zero Inflated Count - Model4.
+
+
 
 ## Make Predictions
 
-We make our final predictions, create a dataframe with the prediction. We see that our predictions have a similar shape to our training Target variable.  
+We show below a table of the fitted values, using the predictions based on Model4:
+
 
 ```{r, echo=FALSE, warning=FALSE}
-finalpreds <- predict(Model6, complete_eval_data)
-finaldf <- cbind(TARGET_FLAG=finalpreds)
-hist(finalpreds)
-write.csv(finaldf, 'HW5preds.csv', row.names = FALSE)
+prediction<- predict(Model4, complete_eval_data, type="response")
+complete_eval_data$TARGET <- prediction
+print(table(round(Model4$fitted.values)))
+write.csv(prediction, 'HW5preds.csv', row.names = FALSE)
+
 ```
+And here it is the training set target value distribution:
+
+```{r}
+table(complete_train_data$TARGET)
+```
+
+
 
 
 # Appendix
